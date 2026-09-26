@@ -68,6 +68,7 @@ class LeaseDetail(BaseModel):
     organization_id: str | None = None
     property_id: str | None = None
     approval_source: str | None = None
+    lease_type: str | None = None
     evidence: list[FieldEvidenceOut] = Field(default_factory=list)
     issues: list[ValidationIssueOut] = Field(default_factory=list)
 

@@ -30,9 +30,11 @@ Missing or incorrect commencement dates, expirations, or rent figures create ope
 - Human review, correction, optimistic concurrency, and a single approval write-path with audit history
 - Versioned approved-lease JSON export
 - Next.js review UI backed by the FastAPI
+- Scoped RAG, official MCP team servers, and a LangGraph supervisor that feed the same extraction/review/approval services
+- Agent settings UI to enable or disable specialists per lease type (`commercial` or `residential`)
 - Pytest, Vitest, Playwright smoke tests, GitHub Actions CI, Docker Compose
 
-The original vertical slice is unchanged: extraction output, evidence, validation, approval, audit, and export remain separate. This branch adds scoped RAG, official MCP team servers, and a LangGraph supervisor that feed those same services. They do not introduce a second approval workflow. Interview notes stay outside Git.
+The original vertical slice is unchanged: extraction output, evidence, validation, approval, audit, and export remain separate. Agents do not introduce a second approval workflow. Interview notes stay outside Git.
 
 ## Architecture overview
 
@@ -77,6 +79,7 @@ npm run dev
 ```
 
 - Frontend: http://localhost:3000
+- Agent settings: http://localhost:3000/settings
 - Backend: http://localhost:8000
 - OpenAPI: http://localhost:8000/docs
 
@@ -92,8 +95,6 @@ python -m app.cli verify-rag
 ```
 
 The seed is idempotent. `verify-rag` prints actual document, chunk, and vector counts plus a sample similarity hit with page references. Do not assume a count until the command has run.
-
-Auto-approval, when it occurs, is an internal lease-abstraction decision only. It never signs a contract or commits funds.
 
 ### Fixture versus live LLM
 
@@ -116,12 +117,38 @@ Fixture mode is labeled in the UI and API. It demonstrates the workflow, not liv
 
 ### Sample demo flow
 
+Original review slice (no specialist graph; property stays unassigned):
+
 1. Open http://localhost:3000/upload
 2. Choose **Complete valid lease**
 3. Confirm extracted fields and evidence
 4. Approve the lease
 5. Open the approved export and inspect `schema_version: "1.0"`
 6. Repeat with **Missing fields lease** to show blocking issues and corrections
+
+Multi-agent slice:
+
+1. Open http://localhost:3000/settings and set specialists for **Commercial** and **Residential**
+2. On Upload, pick a lease type, then **Property A: Prosper Retail Center** (or B/C)
+3. Open the review page and confirm specialist statuses, policy outcome, and lease type
+4. Agents run only when `ENABLE_MULTI_AGENT` is on and the document is bound to a demo property. File-picked PDFs bind a property only when the content hash matches a seeded Property A/B/C sample.
+
+## Multi-agent implementation
+
+LangGraph runs after extraction, evidence, validation, and RAG indexing. The supervisor starts specialists, then risk, then an advisory recommendation, then the deterministic policy engine. Policy may request `AUTO_APPROVED`; only `apply_approval` writes lease status.
+
+| Agent | Default commercial | Default residential | Role |
+| --- | --- | --- | --- |
+| Document, Lease RAG, Property, Finance, Legal, Risk | On | On | Required specialists |
+| Leasing | On | Off | Negotiation and approved rent |
+| Insurance | Off | On | Optional compliance specialist |
+| Recommendation | On | On | Advisory only |
+
+Flag precedence is global → organization → lease type → property. A lower scope cannot loosen a disabled required agent or auto-approval. Property rows do not override specialist-agent toggles; those are managed per lease type on **Agent settings**. Disabling a required agent skips that specialist and blocks auto-approval.
+
+Auto-approval, when it occurs, is an internal lease-abstraction decision only. It never signs a contract or commits funds.
+
+Details: [docs/multi-agent.md](docs/multi-agent.md).
 
 ## API endpoints
 
@@ -143,6 +170,8 @@ Fixture mode is labeled in the UI and API. It demonstrates the workflow, not liv
 | POST | `/api/v1/rag/search` | Scoped vector search |
 | POST | `/api/v1/rag/ask` | Grounded question answering |
 | GET | `/api/v1/flags/effective` | Read-only effective flags |
+| GET | `/api/v1/flags/lease-types` | Agent toggles by lease type |
+| POST | `/api/v1/flags/lease-types/{type}` | Update commercial or residential agents |
 | GET | `/api/v1/leases/{id}/workflow` | Agent and policy execution |
 | POST | `/api/v1/policy/evaluate` | Dry-run policy evaluation |
 | GET | `/api/v1/mcp/status` | MCP discovery status |

@@ -71,7 +71,11 @@ Require `organization_id` and `property_ids`. The `X-Organization-ID` header mus
 
 ### GET /api/v1/flags/effective
 
-Read-only resolved flags. Property settings cannot loosen an organization restriction.
+Read-only resolved flags. Optional `lease_type` is `commercial` or `residential`. Property and lease-type settings cannot loosen an organization restriction.
+
+### GET /api/v1/flags/lease-types and POST /api/v1/flags/lease-types/{lease_type}
+
+Manage specialist-agent enablement for commercial versus residential leases. Only agent flags can be written. Disabling a required agent skips that specialist and blocks auto-approval. Approval still goes through `apply_approval`.
 
 ### GET /api/v1/leases/{lease_id}/workflow
 

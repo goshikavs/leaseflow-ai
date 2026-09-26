@@ -14,6 +14,7 @@ class DocumentSummary(BaseModel):
     organization_id: str | None = None
     property_id: str | None = None
     document_type: str | None = None
+    lease_type: str | None = None
 
 
 class DocumentProcessResponse(BaseModel):

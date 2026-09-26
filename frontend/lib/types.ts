@@ -87,6 +87,7 @@ export type LeaseDetail = {
   organization_id?: string | null;
   property_id?: string | null;
   approval_source?: string | null;
+  lease_type?: string | null;
   evidence: FieldEvidence[];
   issues: ValidationIssue[];
 };
@@ -150,9 +151,31 @@ export type WorkflowOut = {
 export type EffectiveFlags = {
   organization_id: string;
   property_id: string;
+  lease_type?: string;
   config_version: number;
   flags: Record<string, boolean>;
   restricted: boolean;
+  note: string;
+};
+
+export type AgentCatalogItem = {
+  key: string;
+  agent_name: string;
+  label: string;
+  mandatory: boolean;
+  description: string;
+};
+
+export type LeaseTypeFlagSet = {
+  lease_type: string;
+  label: string;
+  description: string;
+  flags: Record<string, boolean>;
+};
+
+export type LeaseTypeFlagCatalog = {
+  lease_types: LeaseTypeFlagSet[];
+  agents: AgentCatalogItem[];
   note: string;
 };
 

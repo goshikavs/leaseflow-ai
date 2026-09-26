@@ -117,6 +117,7 @@ def to_detail(lease: Lease, fixture_mode: bool) -> LeaseDetail:
         organization_id=lease.organization_id,
         property_id=lease.property_id,
         approval_source=lease.approval_source,
+        lease_type=lease.document.lease_type if lease.document else None,
         evidence=evidence,
         issues=[
             ValidationIssueOut(

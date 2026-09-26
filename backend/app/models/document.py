@@ -34,6 +34,7 @@ class Document(Base):
     effective_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     lease_group_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
     sample_key: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    lease_type: Mapped[str] = mapped_column(String(32), nullable=False, default="commercial")
 
     lease: Mapped["Lease | None"] = relationship(back_populates="document", uselist=False, cascade="all, delete-orphan")
     extractions: Mapped[list["Extraction"]] = relationship(back_populates="document", cascade="all, delete-orphan")

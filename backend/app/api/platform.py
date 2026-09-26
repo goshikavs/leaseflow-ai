@@ -11,7 +11,14 @@ from app.core.errors import AppError
 from app.mcp.client import McpClient
 from app.models.workflow import AgentExecution, McpToolCall, PolicyEvaluation, WorkflowExecution
 from app.policy.engine import PolicyInput, evaluate_policy, lease_evidence_complete, lease_has_blocking_issues
-from app.policy.flags import effective_flags, flag_version, seed_default_flags
+from app.policy.flags import (
+    effective_flags,
+    flag_version,
+    lease_type_catalog,
+    normalize_lease_type,
+    seed_default_flags,
+    update_lease_type_flags,
+)
 from app.rag.service import detect_amendment_conflicts
 from app.services.leases import get_lease
 
@@ -21,10 +28,15 @@ router = APIRouter(prefix="/api/v1", tags=["platform"])
 class EffectiveFlagsResponse(BaseModel):
     organization_id: str
     property_id: str
+    lease_type: str
     config_version: int
     flags: dict[str, bool]
     restricted: bool = True
     note: str = "Read-only effective configuration. Frontend flags are not authoritative."
+
+
+class LeaseTypeFlagsUpdate(BaseModel):
+    flags: dict[str, bool]
 
 
 class PolicyDryRunRequest(BaseModel):
@@ -49,6 +61,7 @@ class WorkflowOut(BaseModel):
 def get_effective_flags(
     organization_id: str,
     property_id: str,
+    lease_type: str = "commercial",
     db: Session = Depends(db_session),
     settings: Settings = Depends(settings_dep),
     x_organization_id: str | None = Header(default=None),
@@ -57,13 +70,43 @@ def get_effective_flags(
     if organization_id != requested:
         raise AppError("ORG_SCOPE_DENIED", "Cross-organization flag access is not permitted.", status_code=403)
     seed_default_flags(db)
-    flags = effective_flags(db, organization_id, property_id, kill_switch=settings.auto_approval_kill_switch)
+    normalized = normalize_lease_type(lease_type)
+    flags = effective_flags(
+        db,
+        organization_id,
+        property_id,
+        lease_type=normalized,
+        kill_switch=settings.auto_approval_kill_switch,
+    )
     return EffectiveFlagsResponse(
         organization_id=organization_id,
         property_id=property_id,
-        config_version=flag_version(db, organization_id, property_id),
+        lease_type=normalized,
+        config_version=flag_version(db, organization_id, property_id, lease_type=normalized),
         flags=flags,
     )
+
+
+@router.get("/flags/lease-types")
+def get_lease_type_flags(db: Session = Depends(db_session)) -> dict[str, Any]:
+    return lease_type_catalog(db)
+
+
+@router.post("/flags/lease-types/{lease_type}")
+def put_lease_type_flags(
+    lease_type: str,
+    payload: LeaseTypeFlagsUpdate,
+    db: Session = Depends(db_session),
+) -> dict[str, Any]:
+    flags = update_lease_type_flags(db, lease_type, payload.flags)
+    db.commit()
+    catalog = lease_type_catalog(db)
+    return {
+        "lease_type": normalize_lease_type(lease_type),
+        "flags": flags,
+        "agents": catalog["agents"],
+        "note": catalog["note"],
+    }
 
 
 @router.get("/leases/{lease_id}/workflow", response_model=WorkflowOut | None)
@@ -133,7 +176,11 @@ def dry_run_policy(
 ) -> dict[str, Any]:
     lease = get_lease(db, payload.lease_id)
     flags = effective_flags(
-        db, lease.organization_id, lease.property_id, kill_switch=settings.auto_approval_kill_switch
+        db,
+        lease.organization_id,
+        lease.property_id,
+        lease_type=lease.document.lease_type if lease.document else None,
+        kill_switch=settings.auto_approval_kill_switch,
     )
     result = evaluate_policy(
         PolicyInput(

@@ -11,11 +11,13 @@ export function LeaseIntelligence({
   leaseId,
   organizationId,
   propertyId,
+  leaseType = "commercial",
   approvalSource,
 }: {
   leaseId: string;
   organizationId: string;
   propertyId: string;
+  leaseType?: string;
   approvalSource?: string | null;
 }) {
   const [workflow, setWorkflow] = useState<WorkflowOut | null>(null);
@@ -30,7 +32,7 @@ export function LeaseIntelligence({
       try {
         const [nextWorkflow, nextFlags, nextMcp] = await Promise.all([
           api.workflow(leaseId),
-          api.flags(organizationId, propertyId),
+          api.flags(organizationId, propertyId, leaseType),
           api.mcpStatus(),
         ]);
         if (!cancelled) {
@@ -48,7 +50,7 @@ export function LeaseIntelligence({
     return () => {
       cancelled = true;
     };
-  }, [leaseId, organizationId, propertyId]);
+  }, [leaseId, organizationId, propertyId, leaseType]);
 
   if (loading) return <p role="status">Loading agent and policy context…</p>;
   if (error) return <p className="text-sm text-slate-600">{error}</p>;
@@ -69,7 +71,13 @@ export function LeaseIntelligence({
               <li key={name} className="rounded border border-slate-200 p-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-medium capitalize">{name} agent</p>
-                  <StatusBadge value={agent?.status ?? "skipped"} />
+                  <StatusBadge
+                    value={
+                      !workflow
+                        ? "not_run"
+                        : (agent?.status.toLowerCase() ?? (name === "insurance" ? "optional" : "skipped"))
+                    }
+                  />
                 </div>
                 <p className="mt-1 text-xs text-slate-500">
                   MCP {server?.status ?? "unknown"}
@@ -82,7 +90,12 @@ export function LeaseIntelligence({
       </section>
       <section className="rounded border border-slate-200 bg-white p-5">
         <h2 className="text-lg font-semibold">Agent execution</h2>
-        <p className="mt-1 text-sm text-slate-600">Supervisor status: {workflow?.status ?? "not run"}</p>
+        <p className="mt-1 text-sm text-slate-600">
+          Supervisor status: {workflow?.status ?? "not run"}
+          {propertyId === "prop-unassigned"
+            ? " · Agents start only for Property A/B/C samples, not unassigned uploads."
+            : ` · ${propertyId}`}
+        </p>
         {workflow?.agents.length ? (
           <ul className="mt-3 space-y-2 text-sm">
             {workflow.agents.map((agent) => (
@@ -101,7 +114,8 @@ export function LeaseIntelligence({
       </section>
       <section className="rounded border border-slate-200 bg-white p-5">
         <h2 className="text-lg font-semibold">Approval control</h2>
-        <p className="mt-2 text-sm">Property approval mode: {flags?.flags.REQUIRE_MANUAL_APPROVAL ? "manual only" : "policy controlled"}</p>
+        <p className="mt-2 text-sm">Lease type: {leaseType}</p>
+        <p className="mt-1 text-sm">Property approval mode: {flags?.flags.REQUIRE_MANUAL_APPROVAL ? "manual only" : "policy controlled"}</p>
         <p className="mt-1 text-sm">
           AI recommendation: {String(recommendation?.recommendation ?? "none")} (advisory only)
         </p>

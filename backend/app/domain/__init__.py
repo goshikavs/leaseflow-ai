@@ -30,6 +30,37 @@ PROPERTY_CATALOG = {
     },
 }
 
+SAMPLE_BINDINGS = {
+    "prosper_retail_lease": {
+        "property_id": PROPERTY_PROSPER,
+        "document_type": "lease",
+        "document_version": 1,
+    },
+    "dallas_plaza_lease": {
+        "property_id": PROPERTY_DALLAS,
+        "document_type": "lease",
+        "document_version": 1,
+    },
+    "logistics_park_lease": {
+        "property_id": PROPERTY_LOGISTICS,
+        "document_type": "lease",
+        "document_version": 1,
+    },
+    "logistics_park_large": {
+        "property_id": PROPERTY_LOGISTICS,
+        "document_type": "lease",
+        "document_version": 1,
+    },
+    "logistics_park_amendment": {
+        "property_id": PROPERTY_LOGISTICS,
+        "document_type": "amendment",
+        "document_version": 2,
+    },
+}
+
+LEASE_TYPES = ("commercial", "residential")
+DEFAULT_LEASE_TYPE = "commercial"
+
 FLAG_KEYS = (
     "ENABLE_RAG",
     "ENABLE_MCP_CONTEXT",
