@@ -19,7 +19,7 @@ def _sha256(path: Path) -> str:
 
 def _write_pdf(path: Path, title: str, lines: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    pdf = canvas.Canvas(str(path), pagesize=letter)
+    pdf = canvas.Canvas(str(path), pagesize=letter, invariant=1)
     pdf.setTitle(title)
     pdf.setFont("Times-Roman", 16)
     pdf.drawString(72, 720, title)

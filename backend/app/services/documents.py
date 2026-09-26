@@ -1,5 +1,3 @@
-import json
-
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -8,6 +6,7 @@ from app.core.errors import NotFoundError
 from app.core.ids import new_id
 from app.domain import DEFAULT_LEASE_TYPE, SAMPLE_BINDINGS
 from app.extraction.pdf import validate_pdf_bytes
+from app.extraction.sample_catalog import match_sample_key
 from app.models.document import Document
 from app.models.enums import LeaseStatus, ProcessingStatus
 from app.models.lease import Lease
@@ -18,13 +17,7 @@ from app.services.time import utcnow
 
 
 def _sample_key_for_hash(settings: Settings, digest: str) -> str | None:
-    manifest_path = settings.resolved_samples_dir / "manifest.json"
-    if not manifest_path.exists():
-        return None
-    samples = json.loads(manifest_path.read_text(encoding="utf-8")).get("samples", [])
-    match = next((sample for sample in samples if sample.get("content_hash") == digest), None)
-    key = match.get("key") if match else None
-    return key if isinstance(key, str) else None
+    return match_sample_key(settings.resolved_samples_dir, digest)
 
 
 def resolve_demo_context(

@@ -35,7 +35,7 @@ Executes `SELECT 1`. Returns 503 if the database is unreachable.
 
 Multipart PDF upload. Rejects non-PDF names, empty files, oversized files, and files that do not start with `%PDF-`.
 
-Optional form fields: `organization_id`, `property_id`, `document_type`, `document_version`, `sample_key`, and `lease_type` (`commercial` or `residential`, default `commercial`). `sample_key` is an explicit fixture identifier. The uploaded filename is never used to select a sample record. Processing resolves specialist flags for the stored lease type.
+Optional form fields: `organization_id`, `property_id`, `document_type`, `document_version`, `sample_key`, and `lease_type` (`commercial` or `residential`, default `commercial`). `sample_key` is an explicit fixture identifier. Fixture match uses the verified content hash from `manifest.json` or the live catalog PDF bytes. The uploaded filename is never used to select a sample record. Processing resolves specialist flags for the stored lease type.
 
 ### POST /api/v1/documents/{document_id}/process
 

@@ -118,7 +118,7 @@ Expected: agents and MCP ran; approval still went through `apply_approval`, not 
 - Extraction output, evidence, validation, approval, audit, and export stay on the original tables
 - Agents enrich context; they do not replace the lease row
 - Human Approve and policy auto-approval both call `apply_approval`
-- Fixture match is content hash or explicit sample key, never the uploaded filename
+- Fixture match is content hash (manifest or the live catalog PDF) or explicit sample key, never the uploaded filename
 - Disabling a required agent skips that specialist and fail-closes auto-approval
 
 Automated coverage for these paths: `cd backend; python -m pytest` and `cd frontend; npm test`. Playwright covers the human happy path and missing-fields block.

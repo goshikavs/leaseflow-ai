@@ -13,6 +13,8 @@ def test_hashed_property_sample_runs_agents_without_explicit_property(client) ->
     lease = client.get(f"/api/v1/leases/{processed['lease_id']}").json()
     workflow = client.get(f"/api/v1/leases/{processed['lease_id']}/workflow").json()
     assert lease["property_id"] == PROPERTY_PROSPER
+    assert lease["tenant_name"] == "Northstar Coffee LLC"
+    assert lease["monthly_base_rent"] == "4200.00"
     assert workflow is not None
     statuses = {item["agent_name"]: item["status"] for item in workflow["agents"]}
     assert statuses["property"] == "SUCCESS"

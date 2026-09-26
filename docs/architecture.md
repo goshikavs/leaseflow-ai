@@ -184,7 +184,7 @@ Lease states in the demo flow: `awaiting_review` → `approved`. A `draft` enum 
 The workflow is ordinary Python in `app/workflows/processing.py`, then `app/services/approval.py`:
 
 1. Parse PDF text
-2. Call the configured provider (fixture match is hash or explicit `sample_key` only)
+2. Call the configured provider (fixture match is content hash — manifest or live catalog file — or explicit `sample_key` only)
 3. Verify each evidence passage against page text
 4. Copy only evidence-backed values into the lease
 5. Run deterministic validators

@@ -236,7 +236,7 @@ Compose stores Postgres in the `leaseflow-pg` volume and uploads in `leaseflow-d
 - Single-user demo model. There is no production authentication, authorization, or tenant isolation.
 - SQLite is for the assignment, not multi-writer production traffic.
 - Processing is synchronous in the request. That is acceptable for a short PDF demo and would become a queue worker at scale.
-- Fixture extraction is deterministic and only matches a verified content hash or an explicit `sample_key`. An uploaded PDF named like a sample is not enough.
+- Fixture extraction is deterministic and only matches a verified content hash or an explicit `sample_key`. The hash can come from `samples/manifest.json` or from the live bytes of a catalog PDF. An uploaded PDF named like a sample is not enough.
 - Docker was not available in the original Windows implementation environment; Compose files are provided and validated in CI.
 
 ## Next steps

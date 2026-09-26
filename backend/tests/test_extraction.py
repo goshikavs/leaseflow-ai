@@ -59,6 +59,26 @@ def test_fixture_sample_key_mismatch_raises(sample_pdf: Path) -> None:
     assert exc.value.code == "FIXTURE_ID_MISMATCH"
 
 
+def test_fixture_matches_live_sample_when_manifest_hash_is_stale(tmp_path: Path) -> None:
+    import json
+    import shutil
+
+    samples = Path(__file__).resolve().parents[2] / "samples"
+    source = samples / "prosper_retail_lease.pdf"
+    dest = tmp_path / "prosper_retail_lease.pdf"
+    shutil.copyfile(source, dest)
+    manifest = json.loads((samples / "manifest.json").read_text(encoding="utf-8"))
+    for sample in manifest["samples"]:
+        if sample.get("key") == "prosper_retail_lease":
+            sample["content_hash"] = "0" * 64
+            sample["filename"] = dest.name
+    (tmp_path / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    parsed = parse_pdf(dest)
+    provider = FixtureExtractionProvider(tmp_path)
+    result = provider.extract(parsed, _sha256(dest), "uploaded.pdf")
+    assert result.tenant_name.value == "Northstar Coffee LLC"
+
+
 def test_unknown_document_does_not_receive_fixture_data() -> None:
     document = ParsedDocument(page_count=1, pages=[ParsedPage(page_number=1, text="Unrelated office memo")])
     provider = FixtureExtractionProvider(Path(__file__).resolve().parents[2] / "samples")

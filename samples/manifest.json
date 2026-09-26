@@ -5,7 +5,7 @@
       "key": "sample_lease",
       "filename": "sample_lease.pdf",
       "description": "Complete valid fictional lease",
-      "content_hash": "be248696cea303eecb8030b64b6485134b46aa2a8bc8541d4b0164b65d0db923",
+      "content_hash": "1087ae63d771ae0affe68dbd3a50e7557fd4569a61216adaf2f7961c53836c26",
       "extraction": {
         "tenant_name": {
           "value": "Northwind Analytics LLC",
@@ -61,7 +61,7 @@
       "key": "missing_fields_lease",
       "filename": "missing_fields_lease.pdf",
       "description": "Lease missing landlord, property, and rent",
-      "content_hash": "14320c88bcac591cc0a1aef7fcd4abb30e3ea30ac1ef11594d4b38adbebe66ce",
+      "content_hash": "e7e5f649ddccb34862623305ed462b1ea90f317f8127efa027ca27a2bfdd49f6",
       "extraction": {
         "tenant_name": {
           "value": "Cedar and Pine Consulting Inc.",
@@ -117,7 +117,7 @@
       "key": "conflicting_dates_lease",
       "filename": "conflicting_dates_lease.pdf",
       "description": "Lease whose expiration precedes commencement",
-      "content_hash": "d0853273c747b4f956bed4165af955b821f27092aac48682a0957fd2d30ad7f7",
+      "content_hash": "4bd8ba0c9fa48c5fd4dd2759837502078b871626359ae0bc92304736a2f41fd9",
       "extraction": {
         "tenant_name": {
           "value": "Brightline Logistics LLC",
@@ -173,7 +173,7 @@
       "key": "prosper_retail_lease",
       "filename": "prosper_retail_lease.pdf",
       "description": "Property A retail lease for Prosper Retail Center",
-      "content_hash": "10ec101ab9f8b512cdbd7a33718617dc0c870fb6068f38499dc08edbaa74df20",
+      "content_hash": "07bfcecd1ed1c0591fdc7d79c6cecba3aed2ce44d95ee00c71485afd28eadf93",
       "extraction": {
         "tenant_name": {
           "value": "Northstar Coffee LLC",
@@ -229,7 +229,7 @@
       "key": "dallas_plaza_lease",
       "filename": "dallas_plaza_lease.pdf",
       "description": "Property B office lease for Dallas Corporate Plaza",
-      "content_hash": "3cb9f4bed28dcc8065b14641e11fbd179bbcbaec91d624c64d2c81967905095c",
+      "content_hash": "85c97cde0a52a53f2acabcab1bb3de6707ef8bce02260b909118f36ab5182ee8",
       "extraction": {
         "tenant_name": {
           "value": "Atlas Technology Services LLC",
@@ -285,7 +285,7 @@
       "key": "logistics_park_lease",
       "filename": "logistics_park_lease.pdf",
       "description": "Property C industrial lease for North Texas Logistics Park",
-      "content_hash": "6f0eee31868cf3f403bea3d90120e328a4dce737bb80314d9ae43a44f1bcdbb3",
+      "content_hash": "9a99a5213b93259f9008f28f65f17da54939a1dab68603bc3dc6dacec8e32444",
       "extraction": {
         "tenant_name": {
           "value": "Meridian Distribution LLC",
@@ -341,7 +341,7 @@
       "key": "logistics_park_large",
       "filename": "logistics_park_large.pdf",
       "description": "Large multipage industrial exhibit set",
-      "content_hash": "83703160a1da6d0ab089fb4c5425706ded429e082de2ed058acbaabd310d1062",
+      "content_hash": "d8f0a965857003e73668f4a61093fc023c026dfef72a09246af8b049d875fc54",
       "extraction": {
         "tenant_name": {
           "value": "Meridian Distribution LLC",
@@ -397,7 +397,7 @@
       "key": "logistics_park_amendment",
       "filename": "logistics_park_amendment.pdf",
       "description": "Amendment that supersedes Property C rent",
-      "content_hash": "a81b372893c09af315278077fb760f405a36f22b792be70e7bded7625aaee5f7",
+      "content_hash": "e018ae8d7ce19a9bba862c7a6afc2849b8006ccf64f3eb8c2d27770c9fe05a87",
       "extraction": {
         "tenant_name": {
           "value": "Meridian Distribution LLC",
