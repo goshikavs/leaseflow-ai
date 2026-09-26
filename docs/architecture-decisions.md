@@ -1,6 +1,6 @@
 # Architecture decisions
 
-ADRs 001–006 record the original take-home decisions. Later ADRs add RAG, MCP, and multi-agent behavior on top of that slice. They do not rewrite the earlier choices.
+ADRs 001–006 record the original take-home decisions. Later ADRs add RAG, MCP, multi-agent behavior, a single approval write-path, and lease-type agent settings on top of that slice. They do not rewrite the earlier choices.
 
 ## ADR 001: Modular monolith versus microservices
 
@@ -117,4 +117,14 @@ ADRs 001–006 record the original take-home decisions. Later ADRs add RAG, MCP,
 **Why.** Extraction output, evidence, validation, approval, audit, and export stay on the original tables and services.
 
 **Consequences.** A policy `AUTO_APPROVED` decision that still has blocking issues remains `awaiting_review`. Export is unchanged: only an approved lease can be exported.
+
+## ADR 012: Lease-type scoped specialist enablement
+
+**Context.** Commercial and residential leases need different specialist sets. Property-level flags could express “Dallas is always manual,” but they could not express “skip leasing and run insurance for every residential lease.” Letting a property turn specialists back on would also loosen organization policy.
+
+**Decision.** Persist `documents.lease_type` (`commercial` or `residential`, default `commercial`). Resolve flags as global → organization → lease type → property. Property rows may only tighten approval and never override `AGENT_TOGGLE_KEYS`. Reviewers manage specialist toggles on `/settings` through `POST /api/v1/flags/lease-types/{lease_type}`. Only catalog agent flags can be written there. Optional agents (insurance, recommendation) may be enabled per lease type even when the global default is off. Disabling a required agent skips that specialist and fail-closes auto-approval.
+
+**Why.** Operators can see and change which agents run for each lease category without a competing approval workflow. The backend remains authoritative.
+
+**Consequences.** The LangGraph supervisor reads the document’s lease type. Upload and demo-sample APIs accept `lease_type`. Residential defaults turn leasing off, insurance on, and auto-approval off. Unassigned original samples still skip the entire graph so the original review slice stays visible.
 

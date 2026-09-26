@@ -35,7 +35,7 @@ Executes `SELECT 1`. Returns 503 if the database is unreachable.
 
 Multipart PDF upload. Rejects non-PDF names, empty files, oversized files, and files that do not start with `%PDF-`.
 
-Optional form fields: `organization_id`, `property_id`, `document_type`, `document_version`, and `sample_key`. `sample_key` is an explicit fixture identifier. The uploaded filename is never used to select a sample record.
+Optional form fields: `organization_id`, `property_id`, `document_type`, `document_version`, `sample_key`, and `lease_type` (`commercial` or `residential`, default `commercial`). `sample_key` is an explicit fixture identifier. The uploaded filename is never used to select a sample record. Processing resolves specialist flags for the stored lease type.
 
 ### POST /api/v1/documents/{document_id}/process
 
@@ -45,7 +45,7 @@ Idempotent for already reviewed or approved documents: returns the existing leas
 
 ### POST /api/v1/demo/samples/{sample_key}/upload
 
-Loads a generated sample by key and stores that key on the document. Fixture matching still prefers the verified content hash and rejects a key/hash mismatch.
+Loads a generated sample by key and stores that key on the document. Optional `lease_type` selects the commercial or residential agent profile. Fixture matching still prefers the verified content hash and rejects a key/hash mismatch. Property A/B/C keys bind the matching demo property so LangGraph can start.
 
 ### GET /api/v1/leases?status=
 

@@ -2,7 +2,7 @@
 
 ## Backend
 
-Pytest covers the original extraction/review/export slice plus RAG chunking, real vector similarity, organization isolation, MCP discovery and tool calls, LangGraph specialist aggregation, feature-flag precedence, fail-closed policy, and the Property A/B/C scenarios.
+Pytest covers the original extraction/review/export slice plus RAG chunking, real vector similarity, organization isolation, MCP discovery and tool calls, LangGraph specialist aggregation, feature-flag precedence including lease-type agent toggles, fail-closed policy, and the Property A/B/C scenarios.
 
 Fixture matching is asserted against verified hashes and explicit `sample_key` values. A PDF named `sample_lease.pdf` with an unknown hash must not receive fixture fields. Policy auto-approval and human approval both persist through `apply_approval` and write `approval_source` on the `lease_approved` audit event.
 
@@ -24,7 +24,7 @@ cd frontend
 npm test
 ```
 
-Cases include dashboard empty and error states, upload validation, processing status, field/evidence/issue rendering, save, approval controls, export availability, and keyboard focus on labeled inputs.
+Cases include dashboard empty and error states, upload validation, processing status, field/evidence/issue rendering, save, approval controls, export availability, keyboard focus on labeled inputs, and Agent settings save for commercial versus residential specialists.
 
 ## End-to-end
 
@@ -42,6 +42,8 @@ npm run e2e
 ```
 
 CI runs the same job on Ubuntu. If browsers cannot be installed in an environment, that blocker is recorded rather than replaced with a mocked unit test.
+
+Manual reviewer steps for both the human-review and agentic flows: [reviewer-verification.md](reviewer-verification.md).
 
 ## Quality commands
 

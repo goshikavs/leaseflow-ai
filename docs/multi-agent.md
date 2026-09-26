@@ -6,6 +6,17 @@ LeaseFlow remains a modular monolith. Logical layers live in one FastAPI process
 API -> application workflows -> AI (RAG, agents) -> integrations (MCP) -> domain -> infrastructure
 ```
 
+Code map (same process):
+
+| Concern | Path |
+| --- | --- |
+| RAG chunk, embed, search | `backend/app/rag/` |
+| MCP catalog, client, FastMCP servers | `backend/app/mcp/` |
+| LangGraph supervisor and specialists | `backend/app/agents/` |
+| Database, uploads, samples | `backend/data/leaseflow.db`, `backend/data/uploads/`, `samples/` |
+
+See the README section **Where RAG, MCP, and data live** and [architecture.md](architecture.md) for storage details.
+
 ## Multi-agent graph
 
 ```mermaid
@@ -17,7 +28,21 @@ flowchart TD
   policy --> persist[apply_approval + audit]
 ```
 
-Independent team agents are registered in `AGENT_REGISTRY`. Adding Insurance Compliance only requires a catalog entry, an optional flag, and a registry row. Other specialists do not change.
+The graph starts only after extraction, evidence, validation, and RAG indexing, and only when `ENABLE_MULTI_AGENT` is on and `documents.property_id` is not `prop-unassigned`. Disabled specialists persist as `SKIPPED`. A disabled required agent fail-closes auto-approval.
+
+Independent team agents are registered in `AGENT_REGISTRY` and described in `AGENT_CATALOG` for the settings UI. Adding Insurance Compliance only requires a catalog entry, an optional flag, and a registry row. Other specialists do not change.
+
+| Agent | Flag | Default commercial | Default residential |
+| --- | --- | --- | --- |
+| document | `ENABLE_DOCUMENT_AGENT` | On | On |
+| lease_rag | `ENABLE_LEASE_RAG_AGENT` | On | On |
+| property | `ENABLE_PROPERTY_AGENT` | On | On |
+| finance | `ENABLE_FINANCE_AGENT` | On | On |
+| legal | `ENABLE_LEGAL_AGENT` | On | On |
+| leasing | `ENABLE_LEASING_AGENT` | On | Off |
+| insurance | `ENABLE_INSURANCE_AGENT` | Off | On |
+| risk | `ENABLE_RISK_AGENT` | On | On |
+| recommendation | `ENABLE_RECOMMENDATION_AGENT` | On | On |
 
 ## RAG ingestion
 
@@ -66,6 +91,9 @@ Fail-closed on missing evidence, failed mandatory tools/agents, disabled require
 
 1. Add fictional records and allowlisted tools in `app/mcp/catalog.py`.
 2. Build a FastMCP module with `build_server("name")`.
-3. Register the agent flag and `AGENT_REGISTRY` / `SPECIALIST_TOOLS` entry.
-4. If the agent is optional, keep it out of `MANDATORY_AGENTS`.
-5. Add tests for discovery, authorization, and policy impact.
+3. Register the agent flag and `AGENT_REGISTRY` / `SPECIALIST_TOOLS` / `AGENT_CATALOG` entries.
+4. If the agent is optional, keep it out of `MANDATORY_AGENTS` and `TIGHTEN_ENABLE_KEYS` so a lease type can enable it.
+5. Seed any lease-type default in `LEASE_TYPE_DEFAULTS`.
+6. Add tests for discovery, authorization, lease-type toggles, and policy impact.
+
+Reviewers then enable or disable the new specialist on `/settings` without a code change to the approval path.
