@@ -179,7 +179,7 @@ Seeded defaults:
 
 Persisted document states: `uploaded` → `processing` → `awaiting_review` → `approved`, or `failed`.
 
-Lease states: `draft` / `awaiting_review` → `approved`.
+Lease states in the demo flow: `awaiting_review` → `approved`. A `draft` enum value exists but is unused.
 
 The workflow is ordinary Python in `app/workflows/processing.py`, then `app/services/approval.py`:
 

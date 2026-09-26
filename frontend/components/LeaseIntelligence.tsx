@@ -61,8 +61,11 @@ export function LeaseIntelligence({
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <section className="rounded border border-slate-200 bg-white p-5">
-        <h2 className="text-lg font-semibold">Cross-team context</h2>
-        <p className="mt-1 text-xs text-slate-500">MCP transport is local in-process for this demo.</p>
+        <h2 className="text-lg font-semibold">MCP team servers</h2>
+        <p className="mt-1 text-xs text-slate-500">
+          Catalog health for departmental tools. Document, lease RAG, and risk appear under Agent
+          execution. Server status here does not mean specialists ran.
+        </p>
         <ul className="mt-3 space-y-2 text-sm">
           {TEAM_AGENTS.map((name) => {
             const agent = workflow?.agents.find((item) => item.agent_name === name);

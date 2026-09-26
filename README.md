@@ -183,6 +183,7 @@ Details: [docs/multi-agent.md](docs/multi-agent.md).
 | GET | `/ready` | Database readiness |
 | GET | `/api/v1/stats` | Dashboard counts |
 | GET | `/api/v1/documents` | Paginated documents |
+| GET | `/api/v1/demo/samples` | Synthetic sample catalog |
 | POST | `/api/v1/documents` | Upload PDF |
 | POST | `/api/v1/documents/{id}/process` | Parse, extract, validate |
 | GET | `/api/v1/documents/{id}` | Document status |
@@ -227,6 +228,8 @@ docker compose up --build
 Frontend remains http://localhost:3000 and the API remains http://localhost:8000. Compose starts PostgreSQL with pgvector, the API, an MCP catalog health process, and the UI.
 
 If Docker is not installed locally, use the Python/Node quick start. CI still validates `docker compose config`.
+
+Compose stores Postgres in the `leaseflow-pg` volume and uploads in `leaseflow-data`. Reset that demo with `docker compose down -v`, then `docker compose up --build`. The `backend/data/` delete step applies to the local SQLite path only.
 
 ## Known limitations
 

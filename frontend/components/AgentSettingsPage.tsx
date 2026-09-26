@@ -75,6 +75,8 @@ export function AgentSettingsPage() {
         <p className="mt-2 text-sm text-slate-600">
           Choose which specialists run for commercial versus residential leases. The backend remains
           authoritative. Disabling a required agent skips that specialist and blocks auto-approval.
+          Residential auto-approval stays off as a policy default; confirm it on the review page
+          after upload, not as a checkbox here.
         </p>
       </div>
       {error ? <Alert title={error} /> : null}
