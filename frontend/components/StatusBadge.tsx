@@ -11,6 +11,10 @@ const labels: Record<string, string> = {
   evidence_found: "Evidence found",
   missing: "Missing evidence",
   unsupported_evidence: "Unsupported evidence",
+  success: "Success",
+  skipped: "Skipped",
+  not_run: "Not run",
+  optional: "Optional",
 };
 
 export function StatusBadge({ value }: { value: string }) {
@@ -18,7 +22,11 @@ export function StatusBadge({ value }: { value: string }) {
   return (
     <span className="inline-flex items-center gap-2 rounded border border-slate-300 bg-white px-2 py-1 text-xs text-slate-800">
       <span aria-hidden="true" className="font-mono">
-        {value === "blocking" || value === "failed" ? "!" : value === "approved" || value === "evidence_found" ? "OK" : "i"}
+        {value === "blocking" || value === "failed"
+          ? "!"
+          : value === "approved" || value === "evidence_found" || value === "success"
+            ? "OK"
+            : "i"}
       </span>
       <span>{label}</span>
     </span>

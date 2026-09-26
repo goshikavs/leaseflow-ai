@@ -88,6 +88,54 @@ def test_org_restriction_cannot_be_loosened_by_property(client) -> None:
         db.close()
 
 
+def test_lease_type_agent_flags_can_be_updated(client) -> None:
+    catalog = client.get("/api/v1/flags/lease-types")
+    assert catalog.status_code == 200
+    body = catalog.json()
+    assert {item["lease_type"] for item in body["lease_types"]} == {"commercial", "residential"}
+    residential = next(item for item in body["lease_types"] if item["lease_type"] == "residential")
+    assert residential["flags"]["ENABLE_LEASING_AGENT"] is False
+    assert residential["flags"]["ENABLE_INSURANCE_AGENT"] is True
+    updated = client.post(
+        "/api/v1/flags/lease-types/residential",
+        json={"flags": {"ENABLE_FINANCE_AGENT": False}},
+    )
+    assert updated.status_code == 200
+    assert updated.json()["flags"]["ENABLE_FINANCE_AGENT"] is False
+    flags = client.get(
+        "/api/v1/flags/effective",
+        params={
+            "organization_id": DEMO_ORG_ID,
+            "property_id": PROPERTY_PROSPER,
+            "lease_type": "residential",
+        },
+        headers={"X-Organization-ID": DEMO_ORG_ID},
+    )
+    assert flags.json()["flags"]["ENABLE_FINANCE_AGENT"] is False
+    assert flags.json()["flags"]["ENABLE_AUTO_APPROVAL"] is False
+    rejected = client.post("/api/v1/flags/lease-types/residential", json={"flags": {"ENABLE_AUTO_APPROVAL": True}})
+    assert rejected.status_code == 422
+
+
+def test_residential_sample_skips_disabled_leasing_agent(client) -> None:
+    from pathlib import Path
+
+    from tests.helpers import process_pdf
+
+    processed = process_pdf(
+        client,
+        Path(__file__).resolve().parents[2] / "samples" / "prosper_retail_lease.pdf",
+        lease_type="residential",
+    )
+    lease = client.get(f"/api/v1/leases/{processed['lease_id']}").json()
+    workflow = client.get(f"/api/v1/leases/{processed['lease_id']}/workflow").json()
+    assert lease["lease_type"] == "residential"
+    assert lease["status"] != "approved"
+    statuses = {item["agent_name"]: item["status"] for item in workflow["agents"]}
+    assert statuses["leasing"] == "SKIPPED"
+    assert statuses.get("insurance") == "SUCCESS"
+
+
 def test_kill_switch_and_effective_api(client) -> None:
     response = client.get(
         "/api/v1/flags/effective",

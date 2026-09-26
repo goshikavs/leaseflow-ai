@@ -12,6 +12,7 @@ import type {
   RetrievedChunk,
   Stats,
   WorkflowOut,
+  LeaseTypeFlagCatalog,
 } from "./types";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -59,13 +60,17 @@ export const api = {
     request<Page<LeaseSummary>>(`/api/v1/leases${status ? `?status=${encodeURIComponent(status)}` : ""}`),
   lease: (id: string) => request<LeaseDetail>(`/api/v1/leases/${id}`),
   audit: (id: string) => request<AuditEvent[]>(`/api/v1/leases/${id}/audit`),
-  upload: (file: File) => {
+  upload: (file: File, leaseType = "commercial") => {
     const body = new FormData();
     body.append("file", file);
+    body.append("lease_type", leaseType);
     return request<DocumentSummary>("/api/v1/documents", { method: "POST", body });
   },
-  uploadSample: (key: string) =>
-    request<DocumentSummary>(`/api/v1/demo/samples/${key}/upload`, { method: "POST" }),
+  uploadSample: (key: string, leaseType = "commercial") =>
+    request<DocumentSummary>(
+      `/api/v1/demo/samples/${key}/upload?lease_type=${encodeURIComponent(leaseType)}`,
+      { method: "POST" },
+    ),
   process: (documentId: string) =>
     request<ProcessResponse>(`/api/v1/documents/${documentId}/process`, { method: "POST" }),
   saveLease: (id: string, payload: Record<string, unknown>) =>
@@ -101,10 +106,16 @@ export const api = {
       body: JSON.stringify(payload),
       headers: { "X-Organization-ID": payload.organization_id },
     }),
-  flags: (organizationId: string, propertyId: string) =>
+  flags: (organizationId: string, propertyId: string, leaseType = "commercial") =>
     request<EffectiveFlags>(
-      `/api/v1/flags/effective?organization_id=${encodeURIComponent(organizationId)}&property_id=${encodeURIComponent(propertyId)}`,
+      `/api/v1/flags/effective?organization_id=${encodeURIComponent(organizationId)}&property_id=${encodeURIComponent(propertyId)}&lease_type=${encodeURIComponent(leaseType)}`,
       { headers: { "X-Organization-ID": organizationId } },
+    ),
+  leaseTypeFlags: () => request<LeaseTypeFlagCatalog>("/api/v1/flags/lease-types"),
+  updateLeaseTypeFlags: (leaseType: string, flags: Record<string, boolean>) =>
+    request<{ lease_type: string; flags: Record<string, boolean>; note: string }>(
+      `/api/v1/flags/lease-types/${encodeURIComponent(leaseType)}`,
+      { method: "POST", body: JSON.stringify({ flags }) },
     ),
   workflow: (leaseId: string) => request<WorkflowOut | null>(`/api/v1/leases/${leaseId}/workflow`),
   mcpStatus: () => request<{ transport: string; servers: Record<string, { status: string; tools: string[] }> }>(

@@ -8,6 +8,20 @@ from tests.helpers import process_pdf
 SAMPLES = Path(__file__).resolve().parents[2] / "samples"
 
 
+def test_hashed_property_sample_runs_agents_without_explicit_property(client) -> None:
+    processed = process_pdf(client, SAMPLES / "prosper_retail_lease.pdf")
+    lease = client.get(f"/api/v1/leases/{processed['lease_id']}").json()
+    workflow = client.get(f"/api/v1/leases/{processed['lease_id']}/workflow").json()
+    assert lease["property_id"] == PROPERTY_PROSPER
+    assert workflow is not None
+    statuses = {item["agent_name"]: item["status"] for item in workflow["agents"]}
+    assert statuses["property"] == "SUCCESS"
+    assert statuses["finance"] == "SUCCESS"
+    assert statuses["legal"] == "SUCCESS"
+    assert statuses["leasing"] == "SUCCESS"
+    assert statuses.get("insurance") in {None, "SKIPPED"}
+
+
 def test_scenario_a_prosper_auto_approved(client) -> None:
     processed = process_pdf(
         client,

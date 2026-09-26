@@ -54,8 +54,13 @@ def execute_workflow(
     correlation_id: str,
     chunk_count: int,
 ) -> WorkflowState:
+    lease_type = lease.document.lease_type if lease.document else None
     flags = effective_flags(
-        db, lease.organization_id, lease.property_id, kill_switch=settings.auto_approval_kill_switch
+        db,
+        lease.organization_id,
+        lease.property_id,
+        lease_type=lease_type,
+        kill_switch=settings.auto_approval_kill_switch,
     )
     workflow = WorkflowExecution(
         id=new_id(),
@@ -64,7 +69,7 @@ def execute_workflow(
         property_id=lease.property_id,
         correlation_id=correlation_id,
         status="RUNNING",
-        flag_version=flag_version(db, lease.organization_id, lease.property_id),
+        flag_version=flag_version(db, lease.organization_id, lease.property_id, lease_type=lease_type),
         created_at=utcnow(),
     )
     db.add(workflow)
