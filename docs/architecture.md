@@ -16,7 +16,7 @@ flowchart LR
   flags[Feature flags]
   rag[Document chunks]
   mcp[MCP team servers]
-  graph[LangGraph supervisor]
+  supervisor[LangGraph supervisor]
   policy[Policy engine]
   approval[apply_approval]
   files[PDF storage]
@@ -30,12 +30,12 @@ flowchart LR
   api --> extract
   api --> rag
   api --> flags
-  api --> graph
-  graph --> mcp
-  graph --> policy
+  api --> supervisor
+  supervisor --> mcp
+  supervisor --> policy
   policy --> approval
   approval --> db
-  graph --> db
+  supervisor --> db
   flags --> db
 ```
 
