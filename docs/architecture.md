@@ -2,7 +2,7 @@
 
 LeaseFlow AI is a modular monolith: one FastAPI process, one Next.js UI, and one relational database.
 
-The original take-home slice is still the system of record: upload → extract → evidence → validate → review → approve → export. RAG, MCP specialists, LangGraph, and lease-type agent settings sit on top of that slice. They do not replace lease rows or create a second approval path.
+The original vertical slice is still the system of record: upload → extract → evidence → validate → review → approve → export. RAG, MCP specialists, LangGraph, and lease-type agent settings sit on top of that slice. They do not replace lease rows or create a second approval path.
 
 ## Component diagram
 
@@ -67,7 +67,7 @@ Packages stay inside one process. MCP servers are official FastMCP modules invok
 | PDF files | `storage_dir` | Upload API writes randomized filenames. | Local: `backend/data/uploads/`. Samples used by demo buttons: `samples/*.pdf`. |
 | Flags and workflow | `backend/app/policy/`, `backend/app/agents/` | Settings UI and processing. | `feature_flags`, `workflow_executions`, `agent_executions`, `policy_evaluations`. |
 
-There is no separate RAG service, MCP host, or object store in the assignment default. Compose adds Postgres + a catalog health process only.
+There is no separate RAG service, MCP host, or object store in the local default. Compose adds Postgres and a catalog health loop only; tool calls still run in-process inside the API.
 
 ## Frontend surfaces
 
@@ -131,7 +131,7 @@ sequenceDiagram
 
 ## Data model
 
-Core tables match the assignment:
+Core tables:
 
 - `documents`: upload metadata, content hash, optional `sample_key`, `lease_type` (`commercial` or `residential`, default `commercial`), `property_id` (default `prop-unassigned`), processing status
 - `leases`: authoritative business record, optimistic `version`, `approval_source`
@@ -141,7 +141,7 @@ Core tables match the assignment:
 - `audit_events`: actor, event type, change details
 - `export_events`: schema version and payload hash
 
-Platform tables added on this branch:
+Platform tables:
 
 - `document_chunks`: RAG passages with organization/property filters (not a second system of record)
 - `feature_flags`: `scope_type` + `scope_id` + `flag_key` (global, organization, lease_type, property)

@@ -1,6 +1,6 @@
 # Research
 
-This note separates public sources from assignment-specific assumptions. No Newmark internal systems, confidential leases, or invented company statistics are used.
+This note separates public sources from design assumptions. No Newmark internal systems, confidential leases, or invented company statistics are used.
 
 ## Verified public sources
 
@@ -14,13 +14,13 @@ This note separates public sources from assignment-specific assumptions. No Newm
 
 5. **Versioned APIs are an integration baseline.** See [Zalando RESTful API Guidelines](https://opensource.zalando.com/restful-api-guidelines/) and common JSON contract versioning practice.
 
-## Assumptions used for this assignment
+## Design assumptions
 
 These are design assumptions, not measured Newmark facts:
 
 - A reviewer can inspect eight core fields and evidence faster than they can abstract a full legal memo.
 - Blocking missing dates or rent is more valuable than extracting every clause in a first slice.
-- A short take-home should prefer one working workflow over a platform diagram.
+- A short demo should prefer one working workflow over a platform diagram.
 - Fixture-mode demos are acceptable when clearly labeled.
 
 ## What was not used

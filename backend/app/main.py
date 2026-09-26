@@ -36,7 +36,7 @@ app = FastAPI(
     title=settings.app_name,
     version="1.0.0",
     description=(
-        "AI-assisted commercial lease extraction, validation, human review, "
+        "AI-assisted commercial and residential lease extraction, validation, human review, "
         "and versioned export. This demo does not provide legal advice."
     ),
 )

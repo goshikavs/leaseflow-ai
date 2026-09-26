@@ -22,7 +22,7 @@ If Property A/B/C PDFs are missing from `samples/`, run `python samples/generate
 
 `logistics_park_large.pdf` exists for seed/RAG exhibits and `GET /api/v1/demo/samples`. It is not an Upload button.
 
-A file-picker upload of an unknown PDF stays unassigned, so specialists will not run. Agents start only when `ENABLE_MULTI_AGENT` is on and the document is bound to a demo property.
+A file-picker upload of a catalog PDF matches the live sample bytes or `manifest.json` hash and binds the same property as the corresponding button. An unknown PDF stays unassigned, so specialists will not run. Agents start only when `ENABLE_MULTI_AGENT` is on and the document is bound to a demo property. The uploaded filename is never a fixture selector.
 
 These PDFs are fictional fixture samples, not live LLM results.
 

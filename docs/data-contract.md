@@ -1,6 +1,6 @@
 # Data contract
 
-Approved leases export a versioned JSON document. The example in the assignment is illustrative. Live exports use stored lease rows.
+Approved leases export a versioned JSON document. The example below is illustrative. Live exports use stored lease rows.
 
 ## Schema version 1.0
 

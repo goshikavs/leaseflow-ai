@@ -12,7 +12,7 @@ Documents, leases, chunks, and workflow rows already store `organization_id`. RA
 
 ## PostgreSQL migration
 
-Docker Compose already runs PostgreSQL with pgvector. The remaining work is production pooling, backups, and ops. SQLite remains the local assignment default.
+Docker Compose already runs PostgreSQL and enables the pgvector extension. Embeddings remain a JSON column; similarity is still computed in the app. Remaining work is production pooling, backups, and ops. SQLite remains the local default.
 
 ## Object storage
 
@@ -44,4 +44,4 @@ Build a labeled evaluation set from synthetic and licensed documents. Track fiel
 
 ## Infrastructure as code and orchestration
 
-Terraform or equivalent for cloud resources. Kubernetes only if many services and teams need independent deploy cadence. Docker Compose is enough for this assignment.
+Terraform or equivalent for cloud resources. Kubernetes only if many services and teams need independent deploy cadence. Docker Compose is enough for this demo.

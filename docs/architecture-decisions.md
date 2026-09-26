@@ -1,10 +1,10 @@
 # Architecture decisions
 
-ADRs 001–006 record the original take-home decisions. Later ADRs add RAG, MCP, multi-agent behavior, a single approval write-path, and lease-type agent settings on top of that slice. They do not rewrite the earlier choices.
+ADRs 001–006 record the original slice decisions. Later ADRs add RAG, MCP, multi-agent behavior, a single approval write-path, and lease-type agent settings on top of that slice. They do not rewrite the earlier choices.
 
 ## ADR 001: Modular monolith versus microservices
 
-**Context.** The assignment is a short take-home. The business flow is one document, one extraction, one lease, one approval.
+**Context.** The first slice is short. The business flow is one document, one extraction, one lease, one approval.
 
 **Decision.** Ship a modular monolith with clear packages (`api`, `extraction`, `workflows`, `integrations`) inside one FastAPI app.
 
@@ -12,7 +12,7 @@ ADRs 001–006 record the original take-home decisions. Later ADRs add RAG, MCP,
 
 **Trade-offs.** A monolith is easier to run, test, and explain. It will not scale extractors independently.
 
-**Consequences.** Interviewers can run one backend. A later extraction worker can be split out without changing the data contract.
+**Consequences.** A reviewer can run one backend. A later extraction worker can be split out without changing the data contract.
 
 ## ADR 002: SQLite versus PostgreSQL
 
@@ -28,7 +28,7 @@ ADRs 001–006 record the original take-home decisions. Later ADRs add RAG, MCP,
 
 ## ADR 003: Structured extraction versus full RAG
 
-**Status.** Original take-home decision. **Superseded in part by ADR 007.** Structured extraction remains the system of record. A scoped vector index was added later for evidence retrieval, not to replace the lease fields.
+**Status.** Original slice decision. **Superseded in part by ADR 007.** Structured extraction remains the system of record. A scoped vector index was added later for evidence retrieval, not to replace the lease fields.
 
 **Context.** The required output is a closed set of lease fields plus evidence, not portfolio Q&A.
 
@@ -42,7 +42,7 @@ ADRs 001–006 record the original take-home decisions. Later ADRs add RAG, MCP,
 
 ## ADR 004: Deterministic workflow versus LangGraph
 
-**Status.** Original take-home decision. **Superseded in part by ADR 009.** Extract → verify → validate → persist still runs as ordinary Python. LangGraph is used only for the later specialist/policy graph.
+**Status.** Original slice decision. **Superseded in part by ADR 009.** Extract → verify → validate → persist still runs as ordinary Python. LangGraph is used only for the later specialist/policy graph.
 
 **Context.** The workflow is linear with one human loop: extract → verify → validate → correct → approve → export.
 
@@ -56,7 +56,7 @@ ADRs 001–006 record the original take-home decisions. Later ADRs add RAG, MCP,
 
 ## ADR 005: Human approval before export
 
-**Status.** Original take-home decision. **Partially superseded by ADR 010 and ADR 011.** Export is still approved-only. Approval may be a human reviewer or the deterministic policy engine. Both call `apply_approval`. The LLM still cannot approve or export.
+**Status.** Original slice decision. **Partially superseded by ADR 010 and ADR 011.** Export is still approved-only. Approval may be a human reviewer or the deterministic policy engine. Both call `apply_approval`. The LLM still cannot approve or export.
 
 **Context.** LLM output can omit fields or attach unsupported passages. Downstream rent and date errors are costly.
 
