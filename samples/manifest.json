@@ -1,0 +1,173 @@
+{
+  "schema_version": "1.0",
+  "samples": [
+    {
+      "key": "sample_lease",
+      "filename": "sample_lease.pdf",
+      "description": "Complete valid fictional lease",
+      "content_hash": "143867c13d9649f9d4399a6b6925ff233b9521f3567ef4443540192afb26d173",
+      "extraction": {
+        "tenant_name": {
+          "value": "Northwind Analytics LLC",
+          "page_number": 1,
+          "source_text": "Tenant: Northwind Analytics LLC",
+          "confidence_status": "evidence_found"
+        },
+        "landlord_name": {
+          "value": "Harborpoint Realty Partners LLC",
+          "page_number": 1,
+          "source_text": "Landlord: Harborpoint Realty Partners LLC",
+          "confidence_status": "evidence_found"
+        },
+        "property_address": {
+          "value": "1200 Commerce Street, Suite 400, Dallas, TX 75201",
+          "page_number": 1,
+          "source_text": "Property Address: 1200 Commerce Street, Suite 400, Dallas, TX 75201",
+          "confidence_status": "evidence_found"
+        },
+        "commencement_date": {
+          "value": "2026-01-01",
+          "page_number": 1,
+          "source_text": "Commencement Date: 2026-01-01",
+          "confidence_status": "evidence_found"
+        },
+        "expiration_date": {
+          "value": "2028-12-31",
+          "page_number": 1,
+          "source_text": "Expiration Date: 2028-12-31",
+          "confidence_status": "evidence_found"
+        },
+        "monthly_base_rent": {
+          "value": "18500.00",
+          "page_number": 1,
+          "source_text": "Monthly Base Rent: 18500.00 USD",
+          "confidence_status": "evidence_found"
+        },
+        "currency": {
+          "value": "USD",
+          "page_number": 1,
+          "source_text": "Monthly Base Rent: 18500.00 USD",
+          "confidence_status": "evidence_found"
+        },
+        "renewal_notice_days": {
+          "value": "180",
+          "page_number": 1,
+          "source_text": "Renewal Notice: Tenant shall give 180 days prior written notice to renew.",
+          "confidence_status": "evidence_found"
+        }
+      }
+    },
+    {
+      "key": "missing_fields_lease",
+      "filename": "missing_fields_lease.pdf",
+      "description": "Lease missing landlord, property, and rent",
+      "content_hash": "a85bb77e39872a57b43532955eaa7d451d6c76207ab1cf2aaf5d4b2f28c2b6af",
+      "extraction": {
+        "tenant_name": {
+          "value": "Cedar and Pine Consulting Inc.",
+          "page_number": 1,
+          "source_text": "Tenant: Cedar and Pine Consulting Inc.",
+          "confidence_status": "evidence_found"
+        },
+        "landlord_name": {
+          "value": null,
+          "page_number": null,
+          "source_text": null,
+          "confidence_status": "missing"
+        },
+        "property_address": {
+          "value": null,
+          "page_number": null,
+          "source_text": null,
+          "confidence_status": "missing"
+        },
+        "commencement_date": {
+          "value": "2026-03-15",
+          "page_number": 1,
+          "source_text": "Commencement Date: 2026-03-15",
+          "confidence_status": "evidence_found"
+        },
+        "expiration_date": {
+          "value": "2027-03-14",
+          "page_number": 1,
+          "source_text": "Expiration Date: 2027-03-14",
+          "confidence_status": "evidence_found"
+        },
+        "monthly_base_rent": {
+          "value": null,
+          "page_number": null,
+          "source_text": null,
+          "confidence_status": "missing"
+        },
+        "currency": {
+          "value": null,
+          "page_number": null,
+          "source_text": null,
+          "confidence_status": "missing"
+        },
+        "renewal_notice_days": {
+          "value": "90",
+          "page_number": 1,
+          "source_text": "Renewal Notice: Tenant shall give 90 days prior written notice to renew.",
+          "confidence_status": "evidence_found"
+        }
+      }
+    },
+    {
+      "key": "conflicting_dates_lease",
+      "filename": "conflicting_dates_lease.pdf",
+      "description": "Lease whose expiration precedes commencement",
+      "content_hash": "083b67974443af9054a96bbde502ef3f4f5c948ddd95b68e5758c233c87b91c6",
+      "extraction": {
+        "tenant_name": {
+          "value": "Brightline Logistics LLC",
+          "page_number": 1,
+          "source_text": "Tenant: Brightline Logistics LLC",
+          "confidence_status": "evidence_found"
+        },
+        "landlord_name": {
+          "value": "Summitcrest Holdings LLC",
+          "page_number": 1,
+          "source_text": "Landlord: Summitcrest Holdings LLC",
+          "confidence_status": "evidence_found"
+        },
+        "property_address": {
+          "value": "88 Market Avenue, Floor 12, Austin, TX 78701",
+          "page_number": 1,
+          "source_text": "Property Address: 88 Market Avenue, Floor 12, Austin, TX 78701",
+          "confidence_status": "evidence_found"
+        },
+        "commencement_date": {
+          "value": "2027-06-01",
+          "page_number": 1,
+          "source_text": "Commencement Date: 2027-06-01",
+          "confidence_status": "evidence_found"
+        },
+        "expiration_date": {
+          "value": "2026-05-31",
+          "page_number": 1,
+          "source_text": "Expiration Date: 2026-05-31",
+          "confidence_status": "evidence_found"
+        },
+        "monthly_base_rent": {
+          "value": "14250.00",
+          "page_number": 1,
+          "source_text": "Monthly Base Rent: 14250.00 USD",
+          "confidence_status": "evidence_found"
+        },
+        "currency": {
+          "value": "USD",
+          "page_number": 1,
+          "source_text": "Monthly Base Rent: 14250.00 USD",
+          "confidence_status": "evidence_found"
+        },
+        "renewal_notice_days": {
+          "value": "120",
+          "page_number": 1,
+          "source_text": "Renewal Notice: Tenant shall give 120 days prior written notice to renew.",
+          "confidence_status": "evidence_found"
+        }
+      }
+    }
+  ]
+}

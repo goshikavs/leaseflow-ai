@@ -1,0 +1,55 @@
+# Local data and secrets
+.env
+.env.local
+.env.*.local
+*.db
+*.sqlite
+*.sqlite3
+backend/data/
+frontend/.next/
+frontend/out/
+frontend/coverage/
+backend/.coverage
+backend/coverage.xml
+backend/htmlcov/
+coverage.xml
+backend/.pytest_cache/
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
+frontend/playwright/.cache/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+npm-debug.log*
+frontend/tsconfig.tsbuildinfo
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Workspace artifacts that are not part of LeaseFlow AI
+/InsurancePlatform.sln
+/Directory.Build.props
+/Directory.Packages.props
+/azure-pipelines.yml
+/src/
+/tests/
+/leaseflow-ai/
+.coverage
+coverage.xml
+.ruff_cache/
+
+# Docker
+*.log
