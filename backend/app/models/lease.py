@@ -36,6 +36,9 @@ class Lease(Base):
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     approved_by: Mapped[str | None] = mapped_column(String(128), nullable=True)
     approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    organization_id: Mapped[str] = mapped_column(String(64), nullable=False, default="org-harborpoint")
+    property_id: Mapped[str] = mapped_column(String(64), nullable=False, default="prop-unassigned")
+    approval_source: Mapped[str | None] = mapped_column(String(32), nullable=True)
 
     document: Mapped["Document"] = relationship(back_populates="lease")
     issues: Mapped[list["ValidationIssue"]] = relationship(back_populates="lease", cascade="all, delete-orphan")

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Alert } from "@/components/Alert";
+import { LeaseIntelligence } from "@/components/LeaseIntelligence";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ApiRequestError, api } from "@/lib/api";
 import type { AuditEvent, FieldEvidence, LeaseDetail } from "@/lib/types";
@@ -286,6 +287,12 @@ export function ReviewPage({ leaseId }: { leaseId: string }) {
           </section>
         </aside>
       </div>
+      <LeaseIntelligence
+        leaseId={lease.id}
+        organizationId={lease.organization_id ?? "org-harborpoint"}
+        propertyId={lease.property_id ?? "prop-unassigned"}
+        approvalSource={lease.approval_source}
+      />
     </div>
   );
 }

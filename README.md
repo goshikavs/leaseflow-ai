@@ -32,18 +32,21 @@ Missing or incorrect commencement dates, expirations, or rent figures create ope
 - Next.js review UI backed by the FastAPI
 - Pytest, Vitest, Playwright smoke tests, GitHub Actions CI, Docker Compose
 
-Out of scope for this assignment: authentication, multi-tenant isolation, Kafka, Kubernetes, Redis, a vector database, and live property-management integrations.
+The original vertical slice is unchanged. This branch adds scoped RAG, a vector store, official MCP team servers, a LangGraph supervisor, org/property feature flags, and a deterministic internal approval policy. Interview notes stay outside Git.
 
 ## Architecture overview
 
 ```
-Browser (Next.js) -> FastAPI -> SQLite
-                         |-> PDF storage
-                         |-> Fixture or OpenAI-compatible extractor
-                         |-> Validation + audit + export contract
+Browser (Next.js) -> FastAPI
+                      |-> SQLite locally / PostgreSQL+pgvector in Compose
+                      |-> PDF storage and document chunks
+                      |-> Fixture or OpenAI-compatible extractor
+                      |-> LangGraph supervisor + specialist agents
+                      |-> Allowlisted MCP team servers
+                      |-> Deterministic policy engine + audit
 ```
 
-See [docs/architecture.md](docs/architecture.md) and [docs/architecture-decisions.md](docs/architecture-decisions.md).
+See [docs/architecture.md](docs/architecture.md), [docs/multi-agent.md](docs/multi-agent.md), and [docs/architecture-decisions.md](docs/architecture-decisions.md).
 
 ## Technology stack
 
@@ -78,6 +81,19 @@ npm run dev
 - OpenAPI: http://localhost:8000/docs
 
 Reset the local demo by deleting `backend/data/` and rerunning `alembic upgrade head`.
+
+### Seed synthetic properties and vectors
+
+```powershell
+python samples/generate_samples.py
+cd backend
+python -m app.cli seed
+python -m app.cli verify-rag
+```
+
+The seed is idempotent. `verify-rag` prints actual document, chunk, and vector counts plus a sample similarity hit with page references. Do not assume a count until the command has run.
+
+Auto-approval, when it occurs, is an internal lease-abstraction decision only. It never signs a contract or commits funds.
 
 ### Fixture versus live LLM
 
@@ -124,6 +140,13 @@ Fixture mode is labeled in the UI and API. It demonstrates the workflow, not liv
 | POST | `/api/v1/leases/{id}/approve` | Human approval |
 | GET | `/api/v1/leases/{id}/export` | Versioned JSON |
 | GET | `/api/v1/leases/{id}/audit` | Change history |
+| POST | `/api/v1/rag/search` | Scoped vector search |
+| POST | `/api/v1/rag/ask` | Grounded question answering |
+| GET | `/api/v1/flags/effective` | Read-only effective flags |
+| GET | `/api/v1/leases/{id}/workflow` | Agent and policy execution |
+| POST | `/api/v1/policy/evaluate` | Dry-run policy evaluation |
+| GET | `/api/v1/mcp/status` | MCP discovery status |
+| GET | `/api/v1/leases/{id}/audit-timeline` | Workflow audit timeline |
 | POST | `/api/v1/demo/samples/{key}/upload` | Load a synthetic sample |
 
 ## Test commands
@@ -147,7 +170,7 @@ npm run e2e
 docker compose up --build
 ```
 
-Frontend remains http://localhost:3000 and the API remains http://localhost:8000. Browser requests go to the published backend port. Compose mounts a persistent `leaseflow-data` volume for SQLite and uploaded files.
+Frontend remains http://localhost:3000 and the API remains http://localhost:8000. Compose starts PostgreSQL with pgvector, the API, an MCP catalog health process, and the UI.
 
 If Docker is not installed locally, use the Python/Node quick start. CI still validates `docker compose config`.
 
@@ -161,4 +184,4 @@ If Docker is not installed locally, use the Python/Node quick start. CI still va
 
 ## Next steps
 
-See [docs/future-roadmap.md](docs/future-roadmap.md) and [docs/interview-walkthrough.md](docs/interview-walkthrough.md).
+See [docs/future-roadmap.md](docs/future-roadmap.md) and [docs/multi-agent.md](docs/multi-agent.md).

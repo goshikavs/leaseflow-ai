@@ -56,3 +56,19 @@ Requires no unresolved blocking issues. Records `approved_by` and an audit event
 409 if the lease is not approved.
 
 Additive dashboard helpers: `GET /api/v1/stats`, `GET /api/v1/documents`, and demo sample upload. They do not replace the required review APIs.
+
+### POST /api/v1/rag/search and /api/v1/rag/ask
+
+Require `organization_id` and `property_ids`. The `X-Organization-ID` header must match. Answers include citations or `insufficient_evidence`.
+
+### GET /api/v1/flags/effective
+
+Read-only resolved flags. Property settings cannot loosen an organization restriction.
+
+### GET /api/v1/leases/{lease_id}/workflow
+
+Latest supervisor run, specialist statuses, MCP tool calls, and policy evaluations.
+
+### POST /api/v1/policy/evaluate
+
+Dry-run of the deterministic policy engine. It does not write approved status.

@@ -2,7 +2,7 @@
 
 ## Backend
 
-Pytest covers health, schema creation, uploads, extraction, evidence, validation, concurrency, approval, export, and failure handling. External LLM calls are mocked. Tests use a temporary SQLite file and do not need an API key.
+Pytest covers the original extraction/review/export slice plus RAG chunking, real vector similarity, organization isolation, MCP discovery and tool calls, LangGraph specialist aggregation, feature-flag precedence, fail-closed policy, and the Property A/B/C scenarios. External LLM calls are not required. Tests use a temporary SQLite file.
 
 ```powershell
 cd backend

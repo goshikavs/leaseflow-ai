@@ -12,7 +12,24 @@ function mockLeaseFetch(lease = sampleLease) {
   vi.stubGlobal(
     "fetch",
     vi.fn((url: string, init?: RequestInit) => {
+      if (url.includes("/audit-timeline")) return Promise.resolve(jsonResponse({ events: [], latest_policy_result: null, approval_source: null }));
       if (url.includes("/audit")) return Promise.resolve(jsonResponse([]));
+      if (url.includes("/workflow")) return Promise.resolve(jsonResponse(null));
+      if (url.includes("/flags")) {
+        return Promise.resolve(
+          jsonResponse({
+            organization_id: "org-harborpoint",
+            property_id: "prop-unassigned",
+            config_version: 1,
+            flags: { REQUIRE_MANUAL_APPROVAL: false, ENABLE_AUTO_APPROVAL: true },
+            restricted: true,
+            note: "Read-only",
+          }),
+        );
+      }
+      if (url.includes("/mcp/status")) {
+        return Promise.resolve(jsonResponse({ transport: "in-process", servers: {} }));
+      }
       if (init?.method === "PATCH") {
         return Promise.resolve(
           jsonResponse({

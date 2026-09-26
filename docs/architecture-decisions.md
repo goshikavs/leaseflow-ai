@@ -71,3 +71,38 @@
 **Trade-offs.** Consumers must map the contract. Extraction changes do not break those mappings as quickly.
 
 **Consequences.** A future queue publisher can emit the same JSON without touching PDF parsing.
+
+## ADR 007: RAG for lease evidence
+
+**Context.** Structured extraction answers a closed field set. Reviewers also ask section-level questions across long leases and amendments.
+
+**Decision.** Chunk parsed pages (~800 tokens, 120 overlap), embed with a local hashing provider, and retrieve with cosine similarity plus organization/property filters.
+
+**Why.** RAG keeps answers tied to stored passages and page numbers. It does not replace the lease system of record.
+
+**Alternatives.** Keyword search only, or paid embedding APIs.
+
+## ADR 008: MCP for departmental context
+
+**Context.** Property, finance, legal, and leasing data is not in the PDF.
+
+**Decision.** Expose fictional team records through official MCP tool servers and an allowlisted application client. Authorization happens in the application before any tool call.
+
+**Why.** MCP is an explicit tool protocol. Ordinary REST wrapped in comments would not be MCP.
+
+## ADR 009: Specialist agents and LangGraph
+
+**Context.** Independent team lookups can run as separate logical agents, then a risk and recommendation step must always run before policy.
+
+**Decision.** Use LangGraph for explicit supervisor routing. Specialist agents do not write approval status. The graph ends at the deterministic policy engine.
+
+**Why.** Separate agents keep tool allowlists small. LangGraph makes the mandatory path visible instead of asking an LLM to improvise approval.
+
+## ADR 010: Deterministic approval remains authoritative
+
+**Context.** Auto-approval is tempting for small internal abstractions and dangerous for large or contested leases.
+
+**Decision.** Keep `ApprovalPolicyEngine` outside the LLM. Auto-approval is allowed only for Prosper Retail Center when every fail-closed condition passes. Dallas is always manual. Logistics escalates on conflict or missing context. Auto-approval never signs a lease or moves funds.
+
+**Why.** Small, complete, low-rent records can skip a reviewer queue. Material office and industrial exceptions cannot.
+

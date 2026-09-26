@@ -41,3 +41,5 @@ class AuditEventType(StrEnum):
     LEASE_CORRECTED = "lease_corrected"
     LEASE_APPROVED = "lease_approved"
     LEASE_EXPORTED = "lease_exported"
+    POLICY_EVALUATED = "policy_evaluated"
+    WORKFLOW_COMPLETED = "workflow_completed"

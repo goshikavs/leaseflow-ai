@@ -65,6 +65,9 @@ class LeaseDetail(BaseModel):
     approved_at: datetime | None = None
     extraction_provider: str | None = None
     fixture_mode: bool = False
+    organization_id: str | None = None
+    property_id: str | None = None
+    approval_source: str | None = None
     evidence: list[FieldEvidenceOut] = Field(default_factory=list)
     issues: list[ValidationIssueOut] = Field(default_factory=list)
 
