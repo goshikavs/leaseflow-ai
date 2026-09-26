@@ -84,8 +84,76 @@ export type LeaseDetail = {
   approved_at: string | null;
   extraction_provider: string | null;
   fixture_mode: boolean;
+  organization_id?: string | null;
+  property_id?: string | null;
+  approval_source?: string | null;
   evidence: FieldEvidence[];
   issues: ValidationIssue[];
+};
+
+export type RetrievedChunk = {
+  chunk_id: string;
+  document_id: string;
+  lease_id: string | null;
+  organization_id: string;
+  property_id: string;
+  document_version: number;
+  document_type: string;
+  section_heading: string;
+  start_page: number;
+  end_page: number;
+  source_text: string;
+  score: number;
+};
+
+export type RagAskResponse = {
+  answer: string;
+  insufficient_evidence: boolean;
+  citations: RetrievedChunk[];
+  provider: string;
+  model_name: string;
+};
+
+export type WorkflowOut = {
+  id: string;
+  lease_id: string;
+  correlation_id: string;
+  status: string;
+  policy_result: string | null;
+  recommendation: Record<string, unknown> | null;
+  flag_version: number;
+  agents: Array<{
+    agent_name: string;
+    status: string;
+    findings: Record<string, unknown>;
+    errors: unknown[];
+    duration_ms: number;
+  }>;
+  tool_calls: Array<{
+    server_name: string;
+    tool_name: string;
+    status: string;
+    error: string | null;
+    duration_ms: number;
+    correlation_id: string;
+  }>;
+  policy_evaluations: Array<{
+    decision: string;
+    reason_codes: string[];
+    conditions: Record<string, unknown>;
+    dry_run: boolean;
+    policy_version: number;
+    lease_version: number;
+  }>;
+};
+
+export type EffectiveFlags = {
+  organization_id: string;
+  property_id: string;
+  config_version: number;
+  flags: Record<string, boolean>;
+  restricted: boolean;
+  note: string;
 };
 
 export type AuditEvent = {

@@ -2,12 +2,16 @@ import type {
   ApiError,
   AuditEvent,
   DocumentSummary,
+  EffectiveFlags,
   ExportPayload,
   LeaseDetail,
   LeaseSummary,
   Page,
   ProcessResponse,
+  RagAskResponse,
+  RetrievedChunk,
   Stats,
+  WorkflowOut,
 } from "./types";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -75,4 +79,39 @@ export const api = {
       body: JSON.stringify({ version, reviewed_by: reviewedBy }),
     }),
   exportLease: (id: string) => request<ExportPayload>(`/api/v1/leases/${id}/export`),
+  ragSearch: (payload: {
+    query: string;
+    organization_id: string;
+    property_ids: string[];
+    lease_id?: string | null;
+  }) =>
+    request<{ items: RetrievedChunk[] }>("/api/v1/rag/search", {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: { "X-Organization-ID": payload.organization_id },
+    }),
+  ragAsk: (payload: {
+    query: string;
+    organization_id: string;
+    property_ids: string[];
+    lease_id?: string | null;
+  }) =>
+    request<RagAskResponse>("/api/v1/rag/ask", {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: { "X-Organization-ID": payload.organization_id },
+    }),
+  flags: (organizationId: string, propertyId: string) =>
+    request<EffectiveFlags>(
+      `/api/v1/flags/effective?organization_id=${encodeURIComponent(organizationId)}&property_id=${encodeURIComponent(propertyId)}`,
+      { headers: { "X-Organization-ID": organizationId } },
+    ),
+  workflow: (leaseId: string) => request<WorkflowOut | null>(`/api/v1/leases/${leaseId}/workflow`),
+  mcpStatus: () => request<{ transport: string; servers: Record<string, { status: string; tools: string[] }> }>(
+    "/api/v1/mcp/status",
+  ),
+  timeline: (leaseId: string) =>
+    request<{ events: AuditEvent[]; latest_policy_result: string | null; approval_source: string | null }>(
+      `/api/v1/leases/${leaseId}/audit-timeline`,
+    ),
 };

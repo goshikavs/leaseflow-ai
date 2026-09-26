@@ -9,13 +9,19 @@ flowchart LR
   reviewer[Reviewer browser]
   ui[Next.js App Router]
   api[FastAPI]
-  db[(SQLite)]
+  db[(SQLite / PostgreSQL)]
+  rag[Document chunks]
+  mcp[MCP team servers]
+  graph[LangGraph supervisor]
   files[PDF storage]
   extract[Extraction provider]
   reviewer --> ui --> api
   api --> db
   api --> files
   api --> extract
+  api --> rag
+  api --> graph --> mcp
+  graph --> db
 ```
 
 The backend owns documents, extractions, leases, evidence, validation issues, audit events, and export events. The frontend is a review console. It does not keep an authoritative copy of lease data.

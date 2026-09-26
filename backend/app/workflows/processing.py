@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
@@ -79,7 +80,17 @@ def process_document(db: Session, settings: Settings, document: Document, actor:
             )
 
         values = lease_values_from_extraction(verified)
+        is_amendment = document.document_type == "amendment"
         lease = document.lease
+        if is_amendment and lease is None:
+            lease = db.scalar(
+                select(Lease)
+                .where(
+                    Lease.organization_id == document.organization_id,
+                    Lease.property_id == document.property_id,
+                )
+                .order_by(Lease.created_at.asc())
+            )
         now = utcnow()
         if lease is None:
             lease = Lease(
@@ -89,13 +100,23 @@ def process_document(db: Session, settings: Settings, document: Document, actor:
                 updated_at=now,
                 version=1,
                 status=LeaseStatus.AWAITING_REVIEW.value,
+                organization_id=document.organization_id,
+                property_id=document.property_id,
                 **values,
             )
             db.add(lease)
-        else:
+        elif not is_amendment:
             for key, value in values.items():
                 setattr(lease, key, value)
             lease.status = LeaseStatus.AWAITING_REVIEW.value
+            lease.updated_at = now
+            lease.version += 1
+        else:
+            if lease.status == LeaseStatus.APPROVED.value:
+                lease.status = LeaseStatus.AWAITING_REVIEW.value
+                lease.approval_source = None
+                lease.approved_by = None
+                lease.approved_at = None
             lease.updated_at = now
             lease.version += 1
         db.flush()
@@ -115,7 +136,71 @@ def process_document(db: Session, settings: Settings, document: Document, actor:
                 occurred_at=now,
             )
         )
-        document.processing_status = ProcessingStatus.AWAITING_REVIEW.value
+        from app.agents.graph import execute_workflow
+        from app.policy.engine import AUTO_APPROVED
+        from app.policy.flags import effective_flags
+        from app.rag.service import index_document
+
+        chunks = index_document(
+            db,
+            document,
+            parsed,
+            lease_id=lease.id,
+            target_tokens=settings.rag_chunk_tokens,
+            overlap_tokens=settings.rag_overlap_tokens,
+        )
+        flags = effective_flags(
+            db,
+            document.organization_id,
+            document.property_id,
+            kill_switch=settings.auto_approval_kill_switch,
+        )
+        if flags.get("ENABLE_MULTI_AGENT") and document.property_id != "prop-unassigned":
+            workflow = execute_workflow(
+                db,
+                settings,
+                lease,
+                correlation_id=new_id(),
+                chunk_count=len(chunks),
+            )
+            db.add(
+                AuditEvent(
+                    id=new_id(),
+                    lease_id=lease.id,
+                    event_type=AuditEventType.WORKFLOW_COMPLETED.value,
+                    actor=actor,
+                    change_details={
+                        "correlation_id": workflow.correlation_id,
+                        "policy": workflow.policy,
+                        "advisory_recommendation": workflow.policy is not None,
+                    },
+                    occurred_at=now,
+                )
+            )
+            if workflow.policy and workflow.policy.get("decision") == AUTO_APPROVED:
+                lease.status = LeaseStatus.APPROVED.value
+                lease.approved_by = "policy-engine"
+                lease.approved_at = now
+                lease.approval_source = AUTO_APPROVED
+                document.processing_status = ProcessingStatus.APPROVED.value
+                db.add(
+                    AuditEvent(
+                        id=new_id(),
+                        lease_id=lease.id,
+                        event_type=AuditEventType.LEASE_APPROVED.value,
+                        actor="policy-engine",
+                        change_details={
+                            "approval_source": AUTO_APPROVED,
+                            "internal_abstraction_only": True,
+                            "does_not_sign_or_fund": True,
+                        },
+                        occurred_at=now,
+                    )
+                )
+        if lease.status != LeaseStatus.APPROVED.value:
+            document.processing_status = ProcessingStatus.AWAITING_REVIEW.value
+        elif document.processing_status != ProcessingStatus.APPROVED.value:
+            document.processing_status = ProcessingStatus.AWAITING_REVIEW.value
         document.processing_error = None
         db.commit()
         db.refresh(lease)

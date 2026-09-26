@@ -10,6 +10,10 @@ const samples = [
   { key: "sample_lease", label: "Complete valid lease" },
   { key: "missing_fields_lease", label: "Missing fields lease" },
   { key: "conflicting_dates_lease", label: "Conflicting dates lease" },
+  { key: "prosper_retail_lease", label: "Property A: Prosper Retail Center" },
+  { key: "dallas_plaza_lease", label: "Property B: Dallas Corporate Plaza" },
+  { key: "logistics_park_lease", label: "Property C: North Texas Logistics Park" },
+  { key: "logistics_park_amendment", label: "Property C amendment" },
 ];
 
 export function UploadPage() {

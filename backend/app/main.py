@@ -11,17 +11,22 @@ from alembic import command
 from app.api.documents import router as documents_router
 from app.api.health import router as health_router
 from app.api.leases import router as leases_router
+from app.api.platform import router as platform_router
+from app.api.rag import router as rag_router
 from app.core.config import get_settings
 from app.core.errors import AppError
 from app.core.logging import configure_logging
 from app.models import (  # noqa: F401
     audit_event,
     document,
+    document_chunk,
     export_event,
     extraction,
+    feature_flag,
     field_evidence,
     lease,
     validation_issue,
+    workflow,
 )
 
 configure_logging()
@@ -41,7 +46,7 @@ app.add_middleware(
     allow_origins=settings.cors_origin_list,
     allow_credentials=False,
     allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "X-Correlation-ID"],
+    allow_headers=["Authorization", "Content-Type", "X-Correlation-ID", "X-Organization-ID"],
 )
 
 
@@ -102,6 +107,8 @@ async def unhandled_handler(request: Request, _exc: Exception) -> JSONResponse:
 app.include_router(health_router)
 app.include_router(documents_router)
 app.include_router(leases_router)
+app.include_router(rag_router)
+app.include_router(platform_router)
 
 
 @app.get("/", include_in_schema=False)

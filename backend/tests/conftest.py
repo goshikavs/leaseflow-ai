@@ -1,5 +1,9 @@
+import os
 from collections.abc import Generator
 from pathlib import Path
+
+os.environ.setdefault("LANGCHAIN_TRACING_V2", "false")
+os.environ.setdefault("LANGSMITH_TRACING", "false")
 
 import pytest
 from fastapi.testclient import TestClient

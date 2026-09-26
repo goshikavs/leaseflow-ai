@@ -3,6 +3,7 @@ import Link from "next/link";
 const links = [
   { href: "/", label: "Dashboard" },
   { href: "/upload", label: "Upload" },
+  { href: "/knowledge", label: "Knowledge" },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {

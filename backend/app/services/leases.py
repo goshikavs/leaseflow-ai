@@ -113,6 +113,9 @@ def to_detail(lease: Lease, fixture_mode: bool) -> LeaseDetail:
         approved_at=lease.approved_at,
         extraction_provider=extraction.provider if extraction else None,
         fixture_mode=fixture_mode and (extraction.provider == "fixture" if extraction else fixture_mode),
+        organization_id=lease.organization_id,
+        property_id=lease.property_id,
+        approval_source=lease.approval_source,
         evidence=evidence,
         issues=[
             ValidationIssueOut(
