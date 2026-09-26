@@ -39,7 +39,7 @@ Optional form fields: `organization_id`, `property_id`, `document_type`, `docume
 
 ### POST /api/v1/documents/{document_id}/process
 
-Parse, extract, verify evidence, validate, and index RAG chunks. When multi-agent flags are on, run specialists and the policy engine. A policy `AUTO_APPROVED` result calls the same `apply_approval` helper as human review. Blocking issues keep the lease in `awaiting_review`.
+Parse, extract, verify evidence, validate, and index RAG chunks. LangGraph specialists and the policy engine run only when `ENABLE_MULTI_AGENT` is on **and** `property_id` is not `prop-unassigned`. A policy `AUTO_APPROVED` result calls the same `apply_approval` helper as human review. Blocking issues keep the lease in `awaiting_review`.
 
 Idempotent for already reviewed or approved documents: returns the existing lease. Failed documents may be retried. In-progress processing returns 409.
 
@@ -69,9 +69,25 @@ Additive dashboard helpers: `GET /api/v1/stats`, `GET /api/v1/documents`, and de
 
 Require `organization_id` and `property_ids`. The `X-Organization-ID` header must match. Answers include citations or `insufficient_evidence`.
 
+### GET /api/v1/documents/{document_id}
+
+Document processing status and metadata, including `lease_type` and `property_id`.
+
+### GET /api/v1/demo/samples
+
+Catalog of synthetic sample keys. Upload buttons use this same key set. `logistics_park_large` is listed here for seed/RAG exhibits; it is not a default Upload button.
+
+### GET /api/v1/leases/{lease_id}
+
+Review payload: fields, evidence, issues, `lease_type`, `approval_source`, and fixture-mode label.
+
+### GET /api/v1/leases/{lease_id}/audit
+
+Change history for corrections and approvals.
+
 ### GET /api/v1/flags/effective
 
-Read-only resolved flags. Optional `lease_type` is `commercial` or `residential`. Property and lease-type settings cannot loosen an organization restriction.
+Read-only resolved flags. Required query params: `organization_id` and `property_id`. Optional `lease_type` is `commercial` or `residential`. Optional `X-Organization-ID` must match `organization_id` or the request is 403. Property and lease-type settings cannot loosen an organization restriction.
 
 ### GET /api/v1/flags/lease-types and POST /api/v1/flags/lease-types/{lease_type}
 
@@ -84,3 +100,11 @@ Latest supervisor run, specialist statuses, MCP tool calls, and policy evaluatio
 ### POST /api/v1/policy/evaluate
 
 Dry-run of the deterministic policy engine. It does not write approved status.
+
+### GET /api/v1/mcp/status
+
+Discovery status for allowlisted FastMCP servers and tools.
+
+### GET /api/v1/leases/{lease_id}/audit-timeline
+
+Workflow-oriented timeline (policy and agent events) in addition to `GET /audit`.

@@ -20,6 +20,8 @@ If Property A/B/C PDFs are missing from `samples/`, run `python samples/generate
 | Property C: North Texas Logistics Park | `logistics_park_lease.pdf` | `prop-ntx-logistics` | Yes |
 | Property C amendment | `logistics_park_amendment.pdf` | `prop-ntx-logistics` | Yes |
 
+`logistics_park_large.pdf` exists for seed/RAG exhibits and `GET /api/v1/demo/samples`. It is not an Upload button.
+
 A file-picker upload of an unknown PDF stays unassigned, so specialists will not run. Agents start only when `ENABLE_MULTI_AGENT` is on and the document is bound to a demo property.
 
 These PDFs are fictional fixture samples, not live LLM results.
@@ -67,14 +69,15 @@ Goal: the same extraction/review record, plus LangGraph specialists, allowlisted
 2. Confirm **Commercial** and **Residential** columns
 3. Commercial default: leasing on, insurance off
 4. Residential default: leasing off, insurance on, auto-approval off
-5. Optionally disable a required agent and save. That specialist should skip on the next matching upload, and auto-approval should stay off
+5. Residential auto-approval is a policy default, not a checkbox on this page. Confirm it after a residential Property A upload on the review **Approval control** panel
+6. Optionally disable a required agent and save. That specialist should skip on the next matching upload, and auto-approval should stay off
 
 ### 2. Property A — auto-approval when policy allows
 
 1. On Upload, leave lease type **Commercial**
 2. Click **Property A: Prosper Retail Center**
-3. Confirm property `prop-prosper-retail` and lease type `commercial`
-4. Confirm specialists ran: document, lease RAG, property, finance, legal, leasing, risk (insurance skipped/optional when off)
+3. Confirm property `prop-prosper-retail` and lease type `commercial` in the review header
+4. Confirm **Agent execution** lists document, lease RAG, property, finance, legal, leasing, and risk as SUCCESS (insurance skipped/optional when off). **MCP team servers** shows only the departmental tools.
 5. Confirm policy `AUTO_APPROVED` and lease `approved` with `approval_source` from the policy engine
 6. Confirm export still uses `schema_version` `"1.0"`
 7. A second Approve should be rejected (already approved)
