@@ -38,7 +38,7 @@ The Pydantic model `ApprovedLeaseExport` is the executable contract. Backend tes
 
 ## Why this is separate from extraction
 
-`extractions.structured_output` stores model or fixture output. The lease table is the system of record after evidence checks and human edits. Consumers should bind to the export contract.
+`extractions.structured_output` stores model or fixture output. The lease table is the system of record after evidence checks and reviewer or policy approval through `apply_approval`. Consumers should bind to the export contract.
 
 ## Future publication
 

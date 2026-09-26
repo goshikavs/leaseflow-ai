@@ -14,5 +14,6 @@ class ExtractionProvider(ABC):
         document: ParsedDocument,
         content_hash: str,
         original_filename: str,
+        sample_key: str | None = None,
     ) -> LeaseExtractionResult:
         raise NotImplementedError

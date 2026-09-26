@@ -55,6 +55,7 @@ def seed() -> None:
                 property_id=property_id,
                 document_type=document_type,
                 document_version=version,
+                sample_key=key,
             )
             process_document(db, settings, document, settings.demo_actor)
         db.commit()

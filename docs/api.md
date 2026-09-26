@@ -35,9 +35,17 @@ Executes `SELECT 1`. Returns 503 if the database is unreachable.
 
 Multipart PDF upload. Rejects non-PDF names, empty files, oversized files, and files that do not start with `%PDF-`.
 
+Optional form fields: `organization_id`, `property_id`, `document_type`, `document_version`, and `sample_key`. `sample_key` is an explicit fixture identifier. The uploaded filename is never used to select a sample record.
+
 ### POST /api/v1/documents/{document_id}/process
 
+Parse, extract, verify evidence, validate, and index RAG chunks. When multi-agent flags are on, run specialists and the policy engine. A policy `AUTO_APPROVED` result calls the same `apply_approval` helper as human review. Blocking issues keep the lease in `awaiting_review`.
+
 Idempotent for already reviewed or approved documents: returns the existing lease. Failed documents may be retried. In-progress processing returns 409.
+
+### POST /api/v1/demo/samples/{sample_key}/upload
+
+Loads a generated sample by key and stores that key on the document. Fixture matching still prefers the verified content hash and rejects a key/hash mismatch.
 
 ### GET /api/v1/leases?status=
 
@@ -49,7 +57,7 @@ Corrects field values, increments `version`, writes an audit event, and revalida
 
 ### POST /api/v1/leases/{lease_id}/approve
 
-Requires no unresolved blocking issues. Records `approved_by` and an audit event in the same transaction.
+Requires no unresolved blocking issues. Calls `apply_approval` with `approval_source=HUMAN_REVIEW`, then commits `approved_by`, `approval_source`, and the audit event in the same transaction.
 
 ### GET /api/v1/leases/{lease_id}/export
 
