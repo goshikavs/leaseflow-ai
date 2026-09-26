@@ -5,23 +5,28 @@ from alembic.config import Config
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
 from alembic import command
 from app.api.documents import router as documents_router
 from app.api.health import router as health_router
 from app.api.leases import router as leases_router
+from app.api.platform import router as platform_router
+from app.api.rag import router as rag_router
 from app.core.config import get_settings
 from app.core.errors import AppError
 from app.core.logging import configure_logging
 from app.models import (  # noqa: F401
     audit_event,
     document,
+    document_chunk,
     export_event,
     extraction,
+    feature_flag,
     field_evidence,
     lease,
     validation_issue,
+    workflow,
 )
 
 configure_logging()
@@ -41,7 +46,7 @@ app.add_middleware(
     allow_origins=settings.cors_origin_list,
     allow_credentials=False,
     allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "X-Correlation-ID"],
+    allow_headers=["Authorization", "Content-Type", "X-Correlation-ID", "X-Organization-ID"],
 )
 
 
@@ -102,6 +107,35 @@ async def unhandled_handler(request: Request, _exc: Exception) -> JSONResponse:
 app.include_router(health_router)
 app.include_router(documents_router)
 app.include_router(leases_router)
+app.include_router(rag_router)
+app.include_router(platform_router)
+
+
+@app.get("/", include_in_schema=False)
+def root() -> HTMLResponse:
+    return HTMLResponse(
+        """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LeaseFlow AI API</title>
+  <style>
+    body { font-family: Segoe UI, sans-serif; margin: 2rem; color: #152943; max-width: 40rem; }
+    a { color: #1e3a5f; }
+    code { background: #f1f5f9; padding: 0.1rem 0.35rem; }
+  </style>
+</head>
+<body>
+  <h1>LeaseFlow AI API</h1>
+  <p>This is the backend on port 8000. It serves JSON APIs, not the review screens.</p>
+  <ul>
+    <li><a href="http://localhost:3000">Open the review UI</a> (port 3000)</li>
+    <li><a href="/docs">OpenAPI documentation</a></li>
+    <li><a href="/health">Health check</a></li>
+  </ul>
+</body>
+</html>"""
+    )
 
 
 @app.on_event("startup")

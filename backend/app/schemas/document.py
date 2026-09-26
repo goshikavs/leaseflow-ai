@@ -11,6 +11,9 @@ class DocumentSummary(BaseModel):
     processing_status: str
     processing_error: str | None = None
     lease_id: str | None = None
+    organization_id: str | None = None
+    property_id: str | None = None
+    document_type: str | None = None
 
 
 class DocumentProcessResponse(BaseModel):

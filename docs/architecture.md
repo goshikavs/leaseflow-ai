@@ -9,13 +9,19 @@ flowchart LR
   reviewer[Reviewer browser]
   ui[Next.js App Router]
   api[FastAPI]
-  db[(SQLite)]
+  db[(SQLite / PostgreSQL)]
+  rag[Document chunks]
+  mcp[MCP team servers]
+  graph[LangGraph supervisor]
   files[PDF storage]
   extract[Extraction provider]
   reviewer --> ui --> api
   api --> db
   api --> files
   api --> extract
+  api --> rag
+  api --> graph --> mcp
+  graph --> db
 ```
 
 The backend owns documents, extractions, leases, evidence, validation issues, audit events, and export events. The frontend is a review console. It does not keep an authoritative copy of lease data.
@@ -29,6 +35,9 @@ sequenceDiagram
   participant API as FastAPI
   participant P as PDF parser
   participant X as Extractor
+  participant RAG as RAG index
+  participant G as LangGraph
+  participant A as apply_approval
   participant DB as SQLite
   R->>UI: Upload PDF or choose sample
   UI->>API: POST /api/v1/documents
@@ -38,10 +47,18 @@ sequenceDiagram
   API->>X: Structured extraction
   API->>API: Verify evidence passages
   API->>API: Validate business rules
-  API->>DB: Persist lease, evidence, issues, audit
-  R->>UI: Correct and approve
-  UI->>API: PATCH then POST approve
-  API->>DB: Same-transaction status + audit
+  API->>DB: Persist extraction, lease, evidence, issues
+  API->>RAG: Chunk and embed parsed text
+  API->>G: Specialists, risk, recommendation, policy
+  alt Policy AUTO_APPROVED
+    G->>A: Same approval service
+    A->>DB: Status, audit, approval_source
+  else Manual review
+    R->>UI: Correct and approve
+    UI->>API: PATCH then POST approve
+    API->>A: Same approval service
+    A->>DB: Status, audit, approval_source
+  end
   R->>UI: Export
   UI->>API: GET export
   API-->>UI: schema_version 1.0 JSON
@@ -51,13 +68,14 @@ sequenceDiagram
 
 Core tables match the assignment:
 
-- `documents`: upload metadata, content hash, processing status
-- `leases`: authoritative business record, optimistic `version`
+- `documents`: upload metadata, content hash, optional `sample_key`, processing status
+- `leases`: authoritative business record, optimistic `version`, `approval_source`
 - `extractions`: provider output kept separate from the lease
 - `field_evidence`: page, passage, extracted value, evidence status
 - `validation_issues`: blocking / warning / information, with `resolved_at`
 - `audit_events`: actor, event type, change details
 - `export_events`: schema version and payload hash
+- `document_chunks`: RAG passages with organization/property filters (not a second system of record)
 
 Monetary amounts use `Numeric(14, 2)`. Dates use SQL `Date`. IDs are UUID strings for SQLite/PostgreSQL portability.
 
@@ -67,17 +85,20 @@ Persisted document states: `uploaded` → `processing` → `awaiting_review` →
 
 Lease states: `draft` / `awaiting_review` → `approved`.
 
-The workflow is ordinary Python in `app/workflows/processing.py`:
+The workflow is ordinary Python in `app/workflows/processing.py`, then `app/services/approval.py`:
 
 1. Parse PDF text
-2. Call the configured provider
+2. Call the configured provider (fixture match is hash or explicit `sample_key` only)
 3. Verify each evidence passage against page text
 4. Copy only evidence-backed values into the lease
 5. Run deterministic validators
-6. Wait for a human
-7. Allow correction + revalidation
-8. Approve only when no blocking issues remain
-9. Export the versioned contract
+6. Index chunks for RAG and, when flagged, run the LangGraph specialists
+7. Policy may request auto-approval; it cannot write `lease.status` itself
+8. `apply_approval` revalidates, writes approved status and audit, or leaves the lease in review
+9. Humans correct and approve through the same helper
+10. Export the versioned contract only after approval
+
+Extraction output stays in `extractions` / `field_evidence`. Agents, RAG, and MCP enrich context. They do not replace the lease record or create a second approval path.
 
 The LLM never approves, rejects, or exports.
 

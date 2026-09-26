@@ -51,5 +51,13 @@ Thumbs.db
 coverage.xml
 .ruff_cache/
 
+# Interview materials live outside this repository
+/leaseflow-ai-interview-private/
+docs/interview-walkthrough.md
+/prompts/
+**/interview-prompts/**
+**/recruiter/**
+**/newmark-job-description*
+
 # Docker
 *.log

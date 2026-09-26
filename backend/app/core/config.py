@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     llm_max_retries: int = 2
     llm_max_response_bytes: int = 50_000
     samples_dir: str = Field(default="")
+    rag_chunk_tokens: int = 800
+    rag_overlap_tokens: int = 120
+    rag_min_score: float = 0.12
+    default_organization_id: str = "org-harborpoint"
+    mcp_timeout_seconds: float = 3.0
+    auto_approval_kill_switch: bool = False
+    policy_version: int = 1
 
     @field_validator("extraction_provider")
     @classmethod

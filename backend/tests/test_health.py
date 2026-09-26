@@ -12,6 +12,13 @@ def test_health(client) -> None:
     assert "X-Correlation-ID" in response.headers
 
 
+def test_health_html_for_browsers(client) -> None:
+    response = client.get("/health", headers={"accept": "text/html"})
+    assert response.status_code == 200
+    assert "LeaseFlow AI health" in response.text
+    assert "fixture" in response.text
+
+
 def test_ready(client) -> None:
     response = client.get("/ready")
     assert response.status_code == 200

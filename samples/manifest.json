@@ -5,7 +5,7 @@
       "key": "sample_lease",
       "filename": "sample_lease.pdf",
       "description": "Complete valid fictional lease",
-      "content_hash": "143867c13d9649f9d4399a6b6925ff233b9521f3567ef4443540192afb26d173",
+      "content_hash": "be248696cea303eecb8030b64b6485134b46aa2a8bc8541d4b0164b65d0db923",
       "extraction": {
         "tenant_name": {
           "value": "Northwind Analytics LLC",
@@ -61,7 +61,7 @@
       "key": "missing_fields_lease",
       "filename": "missing_fields_lease.pdf",
       "description": "Lease missing landlord, property, and rent",
-      "content_hash": "a85bb77e39872a57b43532955eaa7d451d6c76207ab1cf2aaf5d4b2f28c2b6af",
+      "content_hash": "14320c88bcac591cc0a1aef7fcd4abb30e3ea30ac1ef11594d4b38adbebe66ce",
       "extraction": {
         "tenant_name": {
           "value": "Cedar and Pine Consulting Inc.",
@@ -117,7 +117,7 @@
       "key": "conflicting_dates_lease",
       "filename": "conflicting_dates_lease.pdf",
       "description": "Lease whose expiration precedes commencement",
-      "content_hash": "083b67974443af9054a96bbde502ef3f4f5c948ddd95b68e5758c233c87b91c6",
+      "content_hash": "d0853273c747b4f956bed4165af955b821f27092aac48682a0957fd2d30ad7f7",
       "extraction": {
         "tenant_name": {
           "value": "Brightline Logistics LLC",
@@ -159,6 +159,286 @@
           "value": "USD",
           "page_number": 1,
           "source_text": "Monthly Base Rent: 14250.00 USD",
+          "confidence_status": "evidence_found"
+        },
+        "renewal_notice_days": {
+          "value": "120",
+          "page_number": 1,
+          "source_text": "Renewal Notice: Tenant shall give 120 days prior written notice to renew.",
+          "confidence_status": "evidence_found"
+        }
+      }
+    },
+    {
+      "key": "prosper_retail_lease",
+      "filename": "prosper_retail_lease.pdf",
+      "description": "Property A retail lease for Prosper Retail Center",
+      "content_hash": "10ec101ab9f8b512cdbd7a33718617dc0c870fb6068f38499dc08edbaa74df20",
+      "extraction": {
+        "tenant_name": {
+          "value": "Northstar Coffee LLC",
+          "page_number": 1,
+          "source_text": "Tenant: Northstar Coffee LLC",
+          "confidence_status": "evidence_found"
+        },
+        "landlord_name": {
+          "value": "Harborpoint Realty Partners LLC",
+          "page_number": 1,
+          "source_text": "Landlord: Harborpoint Realty Partners LLC",
+          "confidence_status": "evidence_found"
+        },
+        "property_address": {
+          "value": "100 Prosper Crossing, Prosper, TX 75078",
+          "page_number": 1,
+          "source_text": "Property Address: 100 Prosper Crossing, Prosper, TX 75078",
+          "confidence_status": "evidence_found"
+        },
+        "commencement_date": {
+          "value": "2026-01-01",
+          "page_number": 1,
+          "source_text": "Commencement Date: 2026-01-01",
+          "confidence_status": "evidence_found"
+        },
+        "expiration_date": {
+          "value": "2028-12-31",
+          "page_number": 1,
+          "source_text": "Expiration Date: 2028-12-31",
+          "confidence_status": "evidence_found"
+        },
+        "monthly_base_rent": {
+          "value": "4200.00",
+          "page_number": 1,
+          "source_text": "Monthly Base Rent: 4200.00 USD",
+          "confidence_status": "evidence_found"
+        },
+        "currency": {
+          "value": "USD",
+          "page_number": 1,
+          "source_text": "Monthly Base Rent: 4200.00 USD",
+          "confidence_status": "evidence_found"
+        },
+        "renewal_notice_days": {
+          "value": "90",
+          "page_number": 1,
+          "source_text": "Renewal Notice: Tenant shall give 90 days prior written notice to renew.",
+          "confidence_status": "evidence_found"
+        }
+      }
+    },
+    {
+      "key": "dallas_plaza_lease",
+      "filename": "dallas_plaza_lease.pdf",
+      "description": "Property B office lease for Dallas Corporate Plaza",
+      "content_hash": "3cb9f4bed28dcc8065b14641e11fbd179bbcbaec91d624c64d2c81967905095c",
+      "extraction": {
+        "tenant_name": {
+          "value": "Atlas Technology Services LLC",
+          "page_number": 1,
+          "source_text": "Tenant: Atlas Technology Services LLC",
+          "confidence_status": "evidence_found"
+        },
+        "landlord_name": {
+          "value": "Harborpoint Realty Partners LLC",
+          "page_number": 1,
+          "source_text": "Landlord: Harborpoint Realty Partners LLC",
+          "confidence_status": "evidence_found"
+        },
+        "property_address": {
+          "value": "2200 Ross Avenue, Suite 1800, Dallas, TX 75201",
+          "page_number": 1,
+          "source_text": "Property Address: 2200 Ross Avenue, Suite 1800, Dallas, TX 75201",
+          "confidence_status": "evidence_found"
+        },
+        "commencement_date": {
+          "value": "2026-04-01",
+          "page_number": 1,
+          "source_text": "Commencement Date: 2026-04-01",
+          "confidence_status": "evidence_found"
+        },
+        "expiration_date": {
+          "value": "2031-03-31",
+          "page_number": 1,
+          "source_text": "Expiration Date: 2031-03-31",
+          "confidence_status": "evidence_found"
+        },
+        "monthly_base_rent": {
+          "value": "78000.00",
+          "page_number": 1,
+          "source_text": "Monthly Base Rent: 78000.00 USD",
+          "confidence_status": "evidence_found"
+        },
+        "currency": {
+          "value": "USD",
+          "page_number": 1,
+          "source_text": "Monthly Base Rent: 78000.00 USD",
+          "confidence_status": "evidence_found"
+        },
+        "renewal_notice_days": {
+          "value": "180",
+          "page_number": 1,
+          "source_text": "Renewal Notice: Tenant shall give 180 days prior written notice to renew.",
+          "confidence_status": "evidence_found"
+        }
+      }
+    },
+    {
+      "key": "logistics_park_lease",
+      "filename": "logistics_park_lease.pdf",
+      "description": "Property C industrial lease for North Texas Logistics Park",
+      "content_hash": "6f0eee31868cf3f403bea3d90120e328a4dce737bb80314d9ae43a44f1bcdbb3",
+      "extraction": {
+        "tenant_name": {
+          "value": "Meridian Distribution LLC",
+          "page_number": 1,
+          "source_text": "Tenant: Meridian Distribution LLC",
+          "confidence_status": "evidence_found"
+        },
+        "landlord_name": {
+          "value": "Harborpoint Realty Partners LLC",
+          "page_number": 1,
+          "source_text": "Landlord: Harborpoint Realty Partners LLC",
+          "confidence_status": "evidence_found"
+        },
+        "property_address": {
+          "value": "4800 Belt Line Road, Building 7, Irving, TX 75038",
+          "page_number": 1,
+          "source_text": "Property Address: 4800 Belt Line Road, Building 7, Irving, TX 75038",
+          "confidence_status": "evidence_found"
+        },
+        "commencement_date": {
+          "value": "2026-02-01",
+          "page_number": 1,
+          "source_text": "Commencement Date: 2026-02-01",
+          "confidence_status": "evidence_found"
+        },
+        "expiration_date": {
+          "value": "2031-01-31",
+          "page_number": 1,
+          "source_text": "Expiration Date: 2031-01-31",
+          "confidence_status": "evidence_found"
+        },
+        "monthly_base_rent": {
+          "value": "31500.00",
+          "page_number": 1,
+          "source_text": "Monthly Base Rent: 31500.00 USD",
+          "confidence_status": "evidence_found"
+        },
+        "currency": {
+          "value": "USD",
+          "page_number": 1,
+          "source_text": "Monthly Base Rent: 31500.00 USD",
+          "confidence_status": "evidence_found"
+        },
+        "renewal_notice_days": {
+          "value": "120",
+          "page_number": 1,
+          "source_text": "Renewal Notice: Tenant shall give 120 days prior written notice to renew.",
+          "confidence_status": "evidence_found"
+        }
+      }
+    },
+    {
+      "key": "logistics_park_large",
+      "filename": "logistics_park_large.pdf",
+      "description": "Large multipage industrial exhibit set",
+      "content_hash": "83703160a1da6d0ab089fb4c5425706ded429e082de2ed058acbaabd310d1062",
+      "extraction": {
+        "tenant_name": {
+          "value": "Meridian Distribution LLC",
+          "page_number": 1,
+          "source_text": "Tenant: Meridian Distribution LLC",
+          "confidence_status": "evidence_found"
+        },
+        "landlord_name": {
+          "value": "Harborpoint Realty Partners LLC",
+          "page_number": 1,
+          "source_text": "Landlord: Harborpoint Realty Partners LLC",
+          "confidence_status": "evidence_found"
+        },
+        "property_address": {
+          "value": "4800 Belt Line Road, Building 7, Irving, TX 75038",
+          "page_number": 1,
+          "source_text": "Property Address: 4800 Belt Line Road, Building 7, Irving, TX 75038",
+          "confidence_status": "evidence_found"
+        },
+        "commencement_date": {
+          "value": "2026-02-01",
+          "page_number": 1,
+          "source_text": "Commencement Date: 2026-02-01",
+          "confidence_status": "evidence_found"
+        },
+        "expiration_date": {
+          "value": "2031-01-31",
+          "page_number": 1,
+          "source_text": "Expiration Date: 2031-01-31",
+          "confidence_status": "evidence_found"
+        },
+        "monthly_base_rent": {
+          "value": "31500.00",
+          "page_number": 1,
+          "source_text": "Monthly Base Rent: 31500.00 USD",
+          "confidence_status": "evidence_found"
+        },
+        "currency": {
+          "value": "USD",
+          "page_number": 1,
+          "source_text": "Monthly Base Rent: 31500.00 USD",
+          "confidence_status": "evidence_found"
+        },
+        "renewal_notice_days": {
+          "value": "120",
+          "page_number": 1,
+          "source_text": "Renewal Notice: Tenant shall give 120 days prior written notice to renew.",
+          "confidence_status": "evidence_found"
+        }
+      }
+    },
+    {
+      "key": "logistics_park_amendment",
+      "filename": "logistics_park_amendment.pdf",
+      "description": "Amendment that supersedes Property C rent",
+      "content_hash": "a81b372893c09af315278077fb760f405a36f22b792be70e7bded7625aaee5f7",
+      "extraction": {
+        "tenant_name": {
+          "value": "Meridian Distribution LLC",
+          "page_number": 1,
+          "source_text": "Tenant: Meridian Distribution LLC",
+          "confidence_status": "evidence_found"
+        },
+        "landlord_name": {
+          "value": "Harborpoint Realty Partners LLC",
+          "page_number": 1,
+          "source_text": "Landlord: Harborpoint Realty Partners LLC",
+          "confidence_status": "evidence_found"
+        },
+        "property_address": {
+          "value": "4800 Belt Line Road, Building 7, Irving, TX 75038",
+          "page_number": 1,
+          "source_text": "Property Address: 4800 Belt Line Road, Building 7, Irving, TX 75038",
+          "confidence_status": "evidence_found"
+        },
+        "commencement_date": {
+          "value": "2026-07-01",
+          "page_number": 1,
+          "source_text": "Commencement Date: 2026-07-01",
+          "confidence_status": "evidence_found"
+        },
+        "expiration_date": {
+          "value": "2031-01-31",
+          "page_number": 1,
+          "source_text": "Expiration Date: 2031-01-31",
+          "confidence_status": "evidence_found"
+        },
+        "monthly_base_rent": {
+          "value": "34800.00",
+          "page_number": 1,
+          "source_text": "Monthly Base Rent is hereby increased to 34800.00 USD",
+          "confidence_status": "evidence_found"
+        },
+        "currency": {
+          "value": "USD",
+          "page_number": 1,
+          "source_text": "Monthly Base Rent is hereby increased to 34800.00 USD",
           "confidence_status": "evidence_found"
         },
         "renewal_notice_days": {

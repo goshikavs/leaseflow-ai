@@ -26,9 +26,11 @@ class FixtureExtractionProvider(ExtractionProvider):
         document: ParsedDocument,
         content_hash: str,
         original_filename: str,
+        sample_key: str | None = None,
     ) -> LeaseExtractionResult:
+        del original_filename  # Filename is never a fixture selector.
         manifest = self._load_manifest()
-        sample = self._match_sample(manifest, content_hash, original_filename)
+        sample = self._match_sample(manifest, content_hash, sample_key)
         if sample is None:
             return _missing_result()
 
@@ -49,12 +51,13 @@ class FixtureExtractionProvider(ExtractionProvider):
             )
         return json.loads(self.manifest_path.read_text(encoding="utf-8"))
 
-    def _match_sample(self, manifest: dict, content_hash: str, original_filename: str) -> dict | None:
+    def _match_sample(self, manifest: dict, content_hash: str, sample_key: str | None) -> dict | None:
         samples = manifest.get("samples", [])
-        for sample in samples:
-            if sample.get("content_hash") == content_hash:
-                return sample
-            identifiers = {sample.get("key"), sample.get("filename")}
-            if original_filename in identifiers:
-                return sample
-        return None
+        by_hash = next((sample for sample in samples if sample.get("content_hash") == content_hash), None)
+        by_key = next((sample for sample in samples if sample_key and sample.get("key") == sample_key), None)
+        if by_hash and by_key and by_hash.get("key") != by_key.get("key"):
+            raise ValidationAppError(
+                "Fixture sample key does not match the verified content hash.",
+                code="FIXTURE_ID_MISMATCH",
+            )
+        return by_hash or by_key

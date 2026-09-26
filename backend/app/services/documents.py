@@ -13,7 +13,18 @@ from app.services.storage import content_hash, safe_original_name, write_documen
 from app.services.time import utcnow
 
 
-def create_document(db: Session, settings: Settings, filename: str, data: bytes) -> Document:
+def create_document(
+    db: Session,
+    settings: Settings,
+    filename: str,
+    data: bytes,
+    *,
+    organization_id: str | None = None,
+    property_id: str | None = None,
+    document_type: str = "lease",
+    document_version: int = 1,
+    sample_key: str | None = None,
+) -> Document:
     validate_pdf_bytes(data, filename, settings.max_upload_bytes)
     digest = content_hash(data)
     stored_path = write_document(settings.resolved_storage_dir, data)
@@ -24,6 +35,11 @@ def create_document(db: Session, settings: Settings, filename: str, data: bytes)
         content_hash=digest,
         uploaded_at=utcnow(),
         processing_status=ProcessingStatus.UPLOADED.value,
+        organization_id=organization_id or settings.default_organization_id,
+        property_id=property_id or "prop-unassigned",
+        document_type=document_type,
+        document_version=document_version,
+        sample_key=sample_key,
     )
     db.add(document)
     db.commit()
@@ -57,6 +73,9 @@ def document_summary(document: Document) -> DocumentSummary:
         processing_status=document.processing_status,
         processing_error=document.processing_error,
         lease_id=document.lease.id if document.lease else None,
+        organization_id=document.organization_id,
+        property_id=document.property_id,
+        document_type=document.document_type,
     )
 
 
@@ -89,6 +108,11 @@ def load_sample_bytes(settings: Settings, sample_key: str) -> tuple[str, bytes]:
         "sample_lease": "sample_lease.pdf",
         "missing_fields_lease": "missing_fields_lease.pdf",
         "conflicting_dates_lease": "conflicting_dates_lease.pdf",
+        "prosper_retail_lease": "prosper_retail_lease.pdf",
+        "dallas_plaza_lease": "dallas_plaza_lease.pdf",
+        "logistics_park_lease": "logistics_park_lease.pdf",
+        "logistics_park_large": "logistics_park_large.pdf",
+        "logistics_park_amendment": "logistics_park_amendment.pdf",
     }
     filename = samples.get(sample_key)
     if filename is None:
