@@ -51,5 +51,8 @@ Thumbs.db
 coverage.xml
 .ruff_cache/
 
+# Interview materials live outside this repository
+/leaseflow-ai-interview-private/
+
 # Docker
 *.log
