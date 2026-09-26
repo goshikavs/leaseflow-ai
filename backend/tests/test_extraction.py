@@ -1,12 +1,19 @@
+import hashlib
 from pathlib import Path
 from unittest.mock import patch
 
-from app.core.errors import AppError
+import pytest
+
+from app.core.errors import AppError, ValidationAppError
 from app.extraction.evidence import passage_exists, verify_field
 from app.extraction.pdf import parse_pdf
 from app.extraction.providers.fixture import FixtureExtractionProvider
 from app.extraction.schemas import ExtractedField, ParsedDocument, ParsedPage
 from tests.helpers import process_pdf
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def test_document_text_extraction(sample_pdf: Path) -> None:
@@ -19,9 +26,37 @@ def test_document_text_extraction(sample_pdf: Path) -> None:
 def test_fixture_extraction_matches_document_text(sample_pdf: Path) -> None:
     parsed = parse_pdf(sample_pdf)
     provider = FixtureExtractionProvider(sample_pdf.parent)
-    result = provider.extract(parsed, "unused", "sample_lease.pdf")
+    result = provider.extract(parsed, _sha256(sample_pdf), "unused.pdf")
     assert result.tenant_name.value == "Northwind Analytics LLC"
     assert result.tenant_name.source_text in parsed.full_text
+
+
+def test_fixture_does_not_match_filename_alone(sample_pdf: Path) -> None:
+    parsed = parse_pdf(sample_pdf)
+    provider = FixtureExtractionProvider(sample_pdf.parent)
+    result = provider.extract(parsed, "0" * 64, "sample_lease.pdf")
+    assert result.tenant_name.value is None
+    assert result.tenant_name.confidence_status == "missing"
+
+
+def test_explicit_sample_key_selects_fixture(sample_pdf: Path) -> None:
+    parsed = parse_pdf(sample_pdf)
+    provider = FixtureExtractionProvider(sample_pdf.parent)
+    result = provider.extract(parsed, "0" * 64, "renamed.pdf", sample_key="sample_lease")
+    assert result.tenant_name.value == "Northwind Analytics LLC"
+
+
+def test_fixture_sample_key_mismatch_raises(sample_pdf: Path) -> None:
+    parsed = parse_pdf(sample_pdf)
+    provider = FixtureExtractionProvider(sample_pdf.parent)
+    with pytest.raises(ValidationAppError) as exc:
+        provider.extract(
+            parsed,
+            _sha256(sample_pdf),
+            "sample_lease.pdf",
+            sample_key="prosper_retail_lease",
+        )
+    assert exc.value.code == "FIXTURE_ID_MISMATCH"
 
 
 def test_unknown_document_does_not_receive_fixture_data() -> None:
@@ -73,7 +108,7 @@ def test_malformed_llm_response(client, sample_pdf: Path, monkeypatch) -> None:
     monkeypatch.setenv("LLM_API_KEY", "test-key")
     get_settings.cache_clear()
 
-    def boom(self, document, content_hash, original_filename):  # type: ignore[no-untyped-def]
+    def boom(self, document, content_hash, original_filename, sample_key=None):  # type: ignore[no-untyped-def]
         raise AppError(
             "LLM_MALFORMED_RESPONSE",
             "The extraction provider returned a response that did not match the schema.",
@@ -92,6 +127,21 @@ def test_malformed_llm_response(client, sample_pdf: Path, monkeypatch) -> None:
     assert response.status_code == 502
     document = client.get(f"/api/v1/documents/{uploaded['id']}").json()
     assert document["processing_status"] == "failed"
+
+
+def test_uploaded_filename_cannot_select_fixture(client, tmp_path: Path) -> None:
+    import fitz
+
+    path = tmp_path / "sample_lease.pdf"
+    pdf = fitz.open()
+    page = pdf.new_page()
+    page.insert_text((72, 72), "This is an unrelated office memo, not a Harborpoint sample.")
+    pdf.save(path)
+    pdf.close()
+    processed = process_pdf(client, path)
+    lease = client.get(f"/api/v1/leases/{processed['lease_id']}").json()
+    assert lease["tenant_name"] is None
+    assert lease["approval_source"] is None
 
 
 def test_processing_failure_is_visible(client, sample_pdf: Path) -> None:

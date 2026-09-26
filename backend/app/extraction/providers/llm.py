@@ -34,7 +34,9 @@ class OpenAICompatibleProvider(ExtractionProvider):
         document: ParsedDocument,
         content_hash: str,
         original_filename: str,
+        sample_key: str | None = None,
     ) -> LeaseExtractionResult:
+        del original_filename, sample_key
         if not self.settings.llm_api_key:
             raise AppError(
                 "LLM_NOT_CONFIGURED",

@@ -4,12 +4,12 @@ from decimal import Decimal
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.core.errors import ConflictError, NotFoundError, ValidationAppError
+from app.core.errors import ConflictError, NotFoundError
 from app.core.ids import new_id
 from app.integrations.contract import build_export_payload
 from app.models.audit_event import AuditEvent
 from app.models.document import Document
-from app.models.enums import AuditEventType, IssueSeverity, LeaseStatus, ProcessingStatus
+from app.models.enums import AuditEventType, IssueSeverity, LeaseStatus
 from app.models.export_event import ExportEvent
 from app.models.extraction import Extraction
 from app.models.lease import Lease
@@ -23,6 +23,7 @@ from app.schemas.lease import (
     LeaseUpdate,
     ValidationIssueOut,
 )
+from app.services.approval import HUMAN_REVIEW, apply_approval
 from app.services.time import utcnow
 from app.workflows.processing import replace_validation_issues
 
@@ -180,36 +181,8 @@ def approve_lease(db: Session, lease: Lease, payload: ApproveRequest, default_ac
     if payload.version != lease.version:
         raise ConflictError("The lease was updated by another request. Refresh and retry.", code="VERSION_CONFLICT")
 
-    created_issues = replace_validation_issues(db, lease)
-    open_blocking = [issue for issue in created_issues if issue.severity == IssueSeverity.BLOCKING.value]
-    if open_blocking:
-        raise ValidationAppError(
-            "Blocking validation issues must be resolved before approval.",
-            code="BLOCKING_ISSUES",
-            details=[
-                {"field": issue.field_name, "code": issue.issue_code, "description": issue.description}
-                for issue in open_blocking
-            ],
-        )
-
     actor = (payload.reviewed_by or default_actor).strip() or default_actor
-    lease.status = LeaseStatus.APPROVED.value
-    lease.approved_by = actor
-    lease.approved_at = utcnow()
-    lease.updated_at = utcnow()
-    lease.version += 1
-    if lease.document:
-        lease.document.processing_status = ProcessingStatus.APPROVED.value
-    db.add(
-        AuditEvent(
-            id=new_id(),
-            lease_id=lease.id,
-            event_type=AuditEventType.LEASE_APPROVED.value,
-            actor=actor,
-            change_details={"reviewed_by": actor},
-            occurred_at=utcnow(),
-        )
-    )
+    apply_approval(db, lease, actor, approval_source=HUMAN_REVIEW)
     db.commit()
     db.refresh(lease)
     return get_lease(db, lease.id)

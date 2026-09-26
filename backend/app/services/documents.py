@@ -23,6 +23,7 @@ def create_document(
     property_id: str | None = None,
     document_type: str = "lease",
     document_version: int = 1,
+    sample_key: str | None = None,
 ) -> Document:
     validate_pdf_bytes(data, filename, settings.max_upload_bytes)
     digest = content_hash(data)
@@ -38,6 +39,7 @@ def create_document(
         property_id=property_id or "prop-unassigned",
         document_type=document_type,
         document_version=document_version,
+        sample_key=sample_key,
     )
     db.add(document)
     db.commit()

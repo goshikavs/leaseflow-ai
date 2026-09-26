@@ -22,6 +22,12 @@ def test_scenario_a_prosper_auto_approved(client) -> None:
     assert workflow["policy_result"] == AUTO_APPROVED
     timeline = client.get(f"/api/v1/leases/{processed['lease_id']}/audit-timeline").json()
     assert any(event["event_type"] == "policy_evaluated" for event in timeline["events"])
+    audit = client.get(f"/api/v1/leases/{processed['lease_id']}/audit").json()
+    approved = next(item for item in audit if item["event_type"] == "lease_approved")
+    assert approved["actor"] == "policy-engine"
+    assert approved["change_details"]["approval_source"] == AUTO_APPROVED
+    assert approved["change_details"]["reviewed_by"] == "policy-engine"
+    assert approved["change_details"]["internal_abstraction_only"] is True
     duplicate = client.post(
         f"/api/v1/leases/{processed['lease_id']}/approve",
         json={"version": lease["version"], "reviewed_by": "demo-reviewer"},

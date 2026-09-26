@@ -64,6 +64,11 @@ def test_approve_valid_lease(client, sample_pdf: Path) -> None:
     assert response.status_code == 200
     assert response.json()["status"] == "approved"
     assert response.json()["approved_by"] == "demo-reviewer"
+    assert response.json()["approval_source"] == "HUMAN_REVIEW"
+    audit = client.get(f"/api/v1/leases/{lease_id}/audit").json()
+    approved = next(item for item in audit if item["event_type"] == "lease_approved")
+    assert approved["actor"] == "demo-reviewer"
+    assert approved["change_details"]["approval_source"] == "HUMAN_REVIEW"
 
 
 def test_reject_invalid_approval(client, missing_pdf: Path) -> None:

@@ -14,7 +14,7 @@ flowchart TD
   specialists --> risk[Risk agent]
   risk --> recommend[Approval recommendation agent]
   recommend --> policy[Deterministic policy engine]
-  policy --> persist[Audit + optional internal auto-approval]
+  policy --> persist[apply_approval + audit]
 ```
 
 Independent team agents are registered in `AGENT_REGISTRY`. Adding Insurance Compliance only requires a catalog entry, an optional flag, and a registry row. Other specialists do not change.
@@ -59,7 +59,7 @@ A property cannot enable auto-approval if the organization or global policy disa
 
 Outputs: `AUTO_APPROVED`, `MANUAL_REVIEW_REQUIRED`, `ESCALATED`, `BLOCKED`.
 
-Fail-closed on missing evidence, failed mandatory tools/agents, disabled required agents, stale versions, kill switch, or blocking validation. The recommendation agent is advisory. Only the policy engine may set internal approved status.
+Fail-closed on missing evidence, failed mandatory tools/agents, disabled required agents, stale versions, kill switch, or blocking validation. The recommendation agent is advisory. The policy engine may request `AUTO_APPROVED`. Only `apply_approval` writes lease approval status, using the same validation and audit rules as `POST /api/v1/leases/{id}/approve`.
 
 ## How to add an agent or MCP server
 

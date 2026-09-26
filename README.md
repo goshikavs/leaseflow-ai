@@ -18,7 +18,7 @@ Commercial lease documents contain dates, rent, parties, and notice periods that
 
 ## Why this problem matters
 
-Missing or incorrect commencement dates, expirations, or rent figures create operational and financial risk. The system keeps the model output separate from the authoritative business record and requires a human approval before export.
+Missing or incorrect commencement dates, expirations, or rent figures create operational and financial risk. The system keeps model output, evidence, and business validation separate from the approved lease record. Export requires an approved lease. Approval is written only through `apply_approval`, whether the actor is a human reviewer or the deterministic policy engine.
 
 ## Implemented scope
 
@@ -27,12 +27,12 @@ Missing or incorrect commencement dates, expirations, or rent figures create ope
 - Isolated extraction provider: deterministic fixture adapter (default) or OpenAI-compatible LLM adapter
 - Evidence verification against parsed page text
 - Deterministic business-rule validation
-- Human review, correction, optimistic concurrency, approval, and audit history
+- Human review, correction, optimistic concurrency, and a single approval write-path with audit history
 - Versioned approved-lease JSON export
 - Next.js review UI backed by the FastAPI
 - Pytest, Vitest, Playwright smoke tests, GitHub Actions CI, Docker Compose
 
-The original vertical slice is unchanged. This branch adds scoped RAG, a vector store, official MCP team servers, a LangGraph supervisor, org/property feature flags, and a deterministic internal approval policy. Interview notes stay outside Git.
+The original vertical slice is unchanged: extraction output, evidence, validation, approval, audit, and export remain separate. This branch adds scoped RAG, official MCP team servers, and a LangGraph supervisor that feed those same services. They do not introduce a second approval workflow. Interview notes stay outside Git.
 
 ## Architecture overview
 
@@ -179,7 +179,7 @@ If Docker is not installed locally, use the Python/Node quick start. CI still va
 - Single-user demo model. There is no production authentication, authorization, or tenant isolation.
 - SQLite is for the assignment, not multi-writer production traffic.
 - Processing is synchronous in the request. That is acceptable for a short PDF demo and would become a queue worker at scale.
-- Fixture extraction is deterministic and only matches known sample hashes or filenames.
+- Fixture extraction is deterministic and only matches a verified content hash or an explicit `sample_key`. An uploaded PDF named like a sample is not enough.
 - Docker was not available in the original Windows implementation environment; Compose files are provided and validated in CI.
 
 ## Next steps

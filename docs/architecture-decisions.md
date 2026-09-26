@@ -1,5 +1,7 @@
 # Architecture decisions
 
+ADRs 001–006 record the original take-home decisions. Later ADRs add RAG, MCP, and multi-agent behavior on top of that slice. They do not rewrite the earlier choices.
+
 ## ADR 001: Modular monolith versus microservices
 
 **Context.** The assignment is a short take-home. The business flow is one document, one extraction, one lease, one approval.
@@ -105,4 +107,14 @@
 **Decision.** Keep `ApprovalPolicyEngine` outside the LLM. Auto-approval is allowed only for Prosper Retail Center when every fail-closed condition passes. Dallas is always manual. Logistics escalates on conflict or missing context. Auto-approval never signs a lease or moves funds.
 
 **Why.** Small, complete, low-rent records can skip a reviewer queue. Material office and industrial exceptions cannot.
+
+## ADR 011: One approval write-path
+
+**Context.** Policy-controlled auto-approval was added after the original human-review slice. Writing `lease.status` inside document processing would have created a second approval workflow next to `approve_lease`.
+
+**Decision.** Human review and policy auto-approval both call `apply_approval` in `app/services/approval.py`. The helper re-runs business validation, refuses blocking issues, sets `approval_source` (`HUMAN_REVIEW` or `AUTO_APPROVED`), and writes the `lease_approved` audit event. Agents and RAG stay read-side context.
+
+**Why.** Extraction output, evidence, validation, approval, audit, and export stay on the original tables and services.
+
+**Consequences.** A policy `AUTO_APPROVED` decision that still has blocking issues remains `awaiting_review`. Export is unchanged: only an approved lease can be exported.
 
