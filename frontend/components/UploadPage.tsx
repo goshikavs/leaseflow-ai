@@ -19,6 +19,7 @@ const samples = [
 export function UploadPage() {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
+  const [leaseType, setLeaseType] = useState("commercial");
   const [status, setStatus] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -78,7 +79,7 @@ export function UploadPage() {
         className="space-y-4 rounded border border-slate-200 bg-white p-6"
         onSubmit={(event) => {
           event.preventDefault();
-          if (file) void run(() => api.upload(file));
+          if (file) void run(() => api.upload(file, leaseType));
         }}
       >
         <label className="block text-sm font-medium" htmlFor="lease-file">
@@ -91,6 +92,21 @@ export function UploadPage() {
           accept="application/pdf,.pdf"
           onChange={(event) => onFile(event.target.files?.[0] ?? null)}
         />
+        <label className="block text-sm font-medium" htmlFor="lease-type">
+          Lease type
+        </label>
+        <select
+          id="lease-type"
+          className="w-full rounded border border-slate-300 px-3 py-2"
+          value={leaseType}
+          onChange={(event) => setLeaseType(event.target.value)}
+        >
+          <option value="commercial">Commercial</option>
+          <option value="residential">Residential</option>
+        </select>
+        <p className="text-sm text-slate-600">
+          Agent enablement is configured per lease type on Agent settings. Current selection: {leaseType}.
+        </p>
         <p className="text-sm text-slate-600">{file ? `Selected: ${file.name}` : "No file selected."}</p>
         <button
           type="submit"
@@ -103,7 +119,9 @@ export function UploadPage() {
       <section className="rounded border border-slate-200 bg-white p-6">
         <h2 className="text-lg font-semibold">Use a synthetic sample</h2>
         <p className="mt-1 text-sm text-slate-600">
-          These files are fictional and used for demos and tests. They are not live LLM results.
+          Use Property A, B, or C to run specialists, MCP, and policy. The first three samples stay
+          unassigned and only exercise human review. These files are fictional and are not live LLM
+          results.
         </p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row">
           {samples.map((sample) => (
@@ -112,7 +130,7 @@ export function UploadPage() {
               type="button"
               className="rounded border border-slate-300 px-3 py-2 text-sm disabled:opacity-60"
               disabled={busy}
-              onClick={() => void run(() => api.uploadSample(sample.key))}
+              onClick={() => void run(() => api.uploadSample(sample.key, leaseType))}
             >
               {sample.label}
             </button>

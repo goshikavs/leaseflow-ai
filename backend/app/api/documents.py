@@ -53,6 +53,7 @@ async def upload_document(
     document_type: str = Form(default="lease"),
     document_version: int = Form(default=1),
     sample_key: str | None = Form(default=None),
+    lease_type: str | None = Form(default=None),
     db: Session = Depends(db_session),
     settings: Settings = Depends(settings_dep),
 ) -> DocumentSummary:
@@ -67,6 +68,7 @@ async def upload_document(
         document_type=document_type,
         document_version=document_version,
         sample_key=sample_key,
+        lease_type=lease_type,
     )
     return document_summary(document)
 
@@ -151,6 +153,7 @@ def upload_sample(
     property_id: str | None = None,
     document_type: str = "lease",
     document_version: int = 1,
+    lease_type: str | None = None,
     db: Session = Depends(db_session),
     settings: Settings = Depends(settings_dep),
 ) -> DocumentSummary:
@@ -175,6 +178,7 @@ def upload_sample(
         document_type=document_type if sample_key not in mapped else default_type,
         document_version=document_version if sample_key not in mapped else default_version,
         sample_key=sample_key,
+        lease_type=lease_type,
     )
     document.processing_status = ProcessingStatus.UPLOADED.value
     db.commit()

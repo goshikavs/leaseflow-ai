@@ -291,6 +291,7 @@ export function ReviewPage({ leaseId }: { leaseId: string }) {
         leaseId={lease.id}
         organizationId={lease.organization_id ?? "org-harborpoint"}
         propertyId={lease.property_id ?? "prop-unassigned"}
+        leaseType={lease.lease_type ?? "commercial"}
         approvalSource={lease.approval_source}
       />
     </div>

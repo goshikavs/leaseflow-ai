@@ -1,16 +1,56 @@
+import json
+
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
 from app.core.errors import NotFoundError
 from app.core.ids import new_id
+from app.domain import DEFAULT_LEASE_TYPE, SAMPLE_BINDINGS
 from app.extraction.pdf import validate_pdf_bytes
 from app.models.document import Document
 from app.models.enums import LeaseStatus, ProcessingStatus
 from app.models.lease import Lease
+from app.policy.flags import normalize_lease_type
 from app.schemas.document import DocumentSummary, StatsResponse
 from app.services.storage import content_hash, safe_original_name, write_document
 from app.services.time import utcnow
+
+
+def _sample_key_for_hash(settings: Settings, digest: str) -> str | None:
+    manifest_path = settings.resolved_samples_dir / "manifest.json"
+    if not manifest_path.exists():
+        return None
+    samples = json.loads(manifest_path.read_text(encoding="utf-8")).get("samples", [])
+    match = next((sample for sample in samples if sample.get("content_hash") == digest), None)
+    key = match.get("key") if match else None
+    return key if isinstance(key, str) else None
+
+
+def resolve_demo_context(
+    settings: Settings,
+    digest: str,
+    *,
+    sample_key: str | None,
+    property_id: str | None,
+    document_type: str,
+    document_version: int,
+) -> tuple[str, str, int, str | None]:
+    key = sample_key or _sample_key_for_hash(settings, digest)
+    binding = SAMPLE_BINDINGS.get(key or "")
+    assigned = property_id if property_id and property_id != "prop-unassigned" else None
+    if assigned and not binding:
+        return assigned, document_type, document_version, key
+    if binding and not assigned:
+        return (
+            binding["property_id"],
+            binding["document_type"],
+            binding["document_version"],
+            key,
+        )
+    if binding and assigned:
+        return assigned, document_type, document_version, key
+    return assigned or "prop-unassigned", document_type, document_version, key
 
 
 def create_document(
@@ -24,9 +64,18 @@ def create_document(
     document_type: str = "lease",
     document_version: int = 1,
     sample_key: str | None = None,
+    lease_type: str | None = None,
 ) -> Document:
     validate_pdf_bytes(data, filename, settings.max_upload_bytes)
     digest = content_hash(data)
+    assigned_property, assigned_type, assigned_version, resolved_key = resolve_demo_context(
+        settings,
+        digest,
+        sample_key=sample_key,
+        property_id=property_id,
+        document_type=document_type,
+        document_version=document_version,
+    )
     stored_path = write_document(settings.resolved_storage_dir, data)
     document = Document(
         id=new_id(),
@@ -36,10 +85,11 @@ def create_document(
         uploaded_at=utcnow(),
         processing_status=ProcessingStatus.UPLOADED.value,
         organization_id=organization_id or settings.default_organization_id,
-        property_id=property_id or "prop-unassigned",
-        document_type=document_type,
-        document_version=document_version,
-        sample_key=sample_key,
+        property_id=assigned_property,
+        document_type=assigned_type,
+        document_version=assigned_version,
+        sample_key=resolved_key,
+        lease_type=normalize_lease_type(lease_type or DEFAULT_LEASE_TYPE),
     )
     db.add(document)
     db.commit()
@@ -76,6 +126,7 @@ def document_summary(document: Document) -> DocumentSummary:
         organization_id=document.organization_id,
         property_id=document.property_id,
         document_type=document.document_type,
+        lease_type=document.lease_type,
     )
 
 

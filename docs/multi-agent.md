@@ -50,10 +50,11 @@ MCP responses cannot override application authorization or approval policy.
 1. Code defaults
 2. Global rows
 3. Organization rows (ceiling)
-4. Property rows (may only tighten approval)
-5. Emergency kill switch `AUTO_APPROVAL_KILL_SWITCH`
+4. Lease-type rows (`commercial` or `residential`) for specialist-agent toggles
+5. Property rows (may only tighten approval; they do not override specialist-agent flags)
+6. Emergency kill switch `AUTO_APPROVAL_KILL_SWITCH`
 
-A property cannot enable auto-approval if the organization or global policy disabled it. Frontend flags are display-only.
+A property cannot enable auto-approval if the organization or global policy disabled it. Lease-type settings cannot turn on an agent the organization disabled. Reviewers manage specialist toggles at http://localhost:3000/settings. Frontend flags are display-only until saved through `POST /api/v1/flags/lease-types/{lease_type}`.
 
 ## Approval policy
 

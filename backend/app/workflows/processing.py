@@ -158,6 +158,7 @@ def process_document(db: Session, settings: Settings, document: Document, actor:
             db,
             document.organization_id,
             document.property_id,
+            lease_type=document.lease_type,
             kill_switch=settings.auto_approval_kill_switch,
         )
         if flags.get("ENABLE_MULTI_AGENT") and document.property_id != "prop-unassigned":
