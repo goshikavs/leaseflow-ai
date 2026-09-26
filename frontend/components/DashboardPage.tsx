@@ -48,8 +48,8 @@ export function DashboardPage() {
       <div>
         <h1 className="text-2xl font-semibold text-navy-900">Lease review dashboard</h1>
         <p className="mt-2 max-w-3xl text-sm text-slate-600">
-          Extracted lease data is a draft until a human reviewer approves it. This application does
-          not provide legal advice.
+          Extracted lease data stays in review until a human or the deterministic policy engine
+          approves it through the same write-path. This application does not provide legal advice.
         </p>
       </div>
       <section aria-label="Portfolio summary" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

@@ -43,12 +43,33 @@ Browser (Next.js) -> FastAPI
                       |-> SQLite locally / PostgreSQL+pgvector in Compose
                       |-> PDF storage and document chunks
                       |-> Fixture or OpenAI-compatible extractor
+                      |-> Feature flags (global / org / lease type / property)
                       |-> LangGraph supervisor + specialist agents
                       |-> Allowlisted MCP team servers
-                      |-> Deterministic policy engine + audit
+                      |-> Deterministic policy engine + apply_approval + audit
 ```
 
-See [docs/architecture.md](docs/architecture.md), [docs/multi-agent.md](docs/multi-agent.md), and [docs/architecture-decisions.md](docs/architecture-decisions.md).
+See [docs/architecture.md](docs/architecture.md), [docs/reviewer-verification.md](docs/reviewer-verification.md), [docs/multi-agent.md](docs/multi-agent.md), and [docs/architecture-decisions.md](docs/architecture-decisions.md).
+
+## Where RAG, MCP, and data live
+
+They are not separate services in the local demo. All three sit inside the FastAPI process.
+
+| Piece | Code | What a reviewer opens | Where data is stored |
+| --- | --- | --- | --- |
+| RAG | `backend/app/rag/` (`chunking.py`, `embeddings.py`, `service.py`) | Knowledge page http://localhost:3000/knowledge, `POST /api/v1/rag/search` and `/ask` | `document_chunks` table. Embeddings are a JSON float array in SQLite. Compose uses PostgreSQL + pgvector. |
+| MCP | `backend/app/mcp/` (`catalog.py`, `client.py`, `servers/`) | Lease review specialist/tool sections, `GET /api/v1/mcp/status` | Fictional team records in `catalog.py`. Tool calls persist in `mcp_tool_calls`. Compose also runs `python -m app.mcp.servers.healthcheck`. |
+| App data | `backend/app/models/`, `backend/app/core/config.py`, `backend/alembic/` | Review, audit, export, Agent settings | Local SQLite `backend/data/leaseflow.db`. Uploaded PDFs in `backend/data/uploads/`. Generated samples in `samples/`. |
+| Agents / policy | `backend/app/agents/`, `backend/app/policy/` | Review workflow panel, `/settings` | `workflow_executions`, `agent_executions`, `policy_evaluations`, `feature_flags` |
+
+Local defaults in `backend/app/core/config.py`:
+
+```
+DATABASE_URL=sqlite:///./data/leaseflow.db
+storage_dir=./data/uploads
+```
+
+Reset the demo by deleting `backend/data/` and running `alembic upgrade head`. Docker Compose switches the database to PostgreSQL (`docker-compose.yml`, volume `leaseflow-pg`) and keeps the same models. RAG vectors stay in `document_chunks`; there is no separate vector database.
 
 ## Technology stack
 
@@ -115,23 +136,27 @@ LLM_MODEL=gpt-4o-mini
 
 Fixture mode is labeled in the UI and API. It demonstrates the workflow, not live LLM accuracy.
 
-### Sample demo flow
+### Reviewer verification: two flows
 
-Original review slice (no specialist graph; property stays unassigned):
+Use the Upload sample buttons. They load generated PDFs from `samples/` (run `python samples/generate_samples.py` if those files are missing). The UI labels **Property A/B/C** map to `prosper_retail_lease.pdf`, `dallas_plaza_lease.pdf`, and `logistics_park_lease.pdf`.
 
-1. Open http://localhost:3000/upload
-2. Choose **Complete valid lease**
-3. Confirm extracted fields and evidence
-4. Approve the lease
-5. Open the approved export and inspect `schema_version: "1.0"`
-6. Repeat with **Missing fields lease** to show blocking issues and corrections
+Full click-by-click checklist: [docs/reviewer-verification.md](docs/reviewer-verification.md).
 
-Multi-agent slice:
+**Flow 1 — Human review.** Property stays `prop-unassigned`. LangGraph does not start.
 
-1. Open http://localhost:3000/settings and set specialists for **Commercial** and **Residential**
-2. On Upload, pick a lease type, then **Property A: Prosper Retail Center** (or B/C)
-3. Open the review page and confirm specialist statuses, policy outcome, and lease type
-4. Agents run only when `ENABLE_MULTI_AGENT` is on and the document is bound to a demo property. File-picked PDFs bind a property only when the content hash matches a seeded Property A/B/C sample.
+1. http://localhost:3000/upload → **Complete valid lease** → evidence → **Approve** → export `schema_version: "1.0"`
+2. **Missing fields lease** → Approve disabled → correct fields → audit event → approve
+3. **Conflicting dates lease** → date-range validator blocks approval
+
+**Flow 2 — Agentic.** Specialists, MCP, and policy run because the sample binds a Harborpoint property.
+
+1. http://localhost:3000/settings → confirm commercial vs residential agent toggles
+2. Upload, lease type **Commercial** → **Property A: Prosper Retail Center** → specialists SUCCESS, policy can `AUTO_APPROVED` through `apply_approval`
+3. **Property B: Dallas Corporate Plaza** → specialists run, `MANUAL_REVIEW_REQUIRED`
+4. **Property C** then **Property C amendment** → not auto-approved; amendment conflict escalates or blocks
+5. Lease type **Residential** → **Property A** → leasing SKIPPED, insurance SUCCESS, auto-approval off
+
+Do not expect agents on the first three samples, or on a file-picked PDF that does not match a seeded Property A/B/C hash. Auto-approval is an internal lease-abstraction decision only. It never signs a contract or commits funds.
 
 ## Multi-agent implementation
 
@@ -158,6 +183,7 @@ Details: [docs/multi-agent.md](docs/multi-agent.md).
 | GET | `/ready` | Database readiness |
 | GET | `/api/v1/stats` | Dashboard counts |
 | GET | `/api/v1/documents` | Paginated documents |
+| GET | `/api/v1/demo/samples` | Synthetic sample catalog |
 | POST | `/api/v1/documents` | Upload PDF |
 | POST | `/api/v1/documents/{id}/process` | Parse, extract, validate |
 | GET | `/api/v1/documents/{id}` | Document status |
@@ -202,6 +228,8 @@ docker compose up --build
 Frontend remains http://localhost:3000 and the API remains http://localhost:8000. Compose starts PostgreSQL with pgvector, the API, an MCP catalog health process, and the UI.
 
 If Docker is not installed locally, use the Python/Node quick start. CI still validates `docker compose config`.
+
+Compose stores Postgres in the `leaseflow-pg` volume and uploads in `leaseflow-data`. Reset that demo with `docker compose down -v`, then `docker compose up --build`. The `backend/data/` delete step applies to the local SQLite path only.
 
 ## Known limitations
 

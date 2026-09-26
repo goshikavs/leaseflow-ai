@@ -1,6 +1,6 @@
 # Architecture decisions
 
-ADRs 001–006 record the original take-home decisions. Later ADRs add RAG, MCP, and multi-agent behavior on top of that slice. They do not rewrite the earlier choices.
+ADRs 001–006 record the original take-home decisions. Later ADRs add RAG, MCP, multi-agent behavior, a single approval write-path, and lease-type agent settings on top of that slice. They do not rewrite the earlier choices.
 
 ## ADR 001: Modular monolith versus microservices
 
@@ -28,6 +28,8 @@ ADRs 001–006 record the original take-home decisions. Later ADRs add RAG, MCP,
 
 ## ADR 003: Structured extraction versus full RAG
 
+**Status.** Original take-home decision. **Superseded in part by ADR 007.** Structured extraction remains the system of record. A scoped vector index was added later for evidence retrieval, not to replace the lease fields.
+
 **Context.** The required output is a closed set of lease fields plus evidence, not portfolio Q&A.
 
 **Decision.** Use structured extraction into a Pydantic schema. Persist evidence. Do not add a vector index.
@@ -36,9 +38,11 @@ ADRs 001–006 record the original take-home decisions. Later ADRs add RAG, MCP,
 
 **Trade-offs.** Structured extraction is testable and cheaper. It cannot answer "what happens if the tenant assigns the lease?"
 
-**Consequences.** RAG remains a future portfolio feature after the system of record exists.
+**Consequences.** The original slice shipped without RAG. ADR 007 later added scoped chunk search on parsed pages. Portfolio-wide retrieval over approved records remains future work.
 
 ## ADR 004: Deterministic workflow versus LangGraph
+
+**Status.** Original take-home decision. **Superseded in part by ADR 009.** Extract → verify → validate → persist still runs as ordinary Python. LangGraph is used only for the later specialist/policy graph.
 
 **Context.** The workflow is linear with one human loop: extract → verify → validate → correct → approve → export.
 
@@ -48,9 +52,11 @@ ADRs 001–006 record the original take-home decisions. Later ADRs add RAG, MCP,
 
 **Trade-offs.** LangGraph would help if we had long-running multi-agent branching and durable graph state. Here it would add a framework without changing the product.
 
-**Consequences.** Failure states are ordinary database statuses. Retry is an HTTP call, not a graph resume.
+**Consequences.** The original review slice still uses database statuses and HTTP retry. ADR 009 later adopted LangGraph for explicit specialist routing. That graph still cannot write `lease.status`.
 
 ## ADR 005: Human approval before export
+
+**Status.** Original take-home decision. **Partially superseded by ADR 010 and ADR 011.** Export is still approved-only. Approval may be a human reviewer or the deterministic policy engine. Both call `apply_approval`. The LLM still cannot approve or export.
 
 **Context.** LLM output can omit fields or attach unsupported passages. Downstream rent and date errors are costly.
 
@@ -60,7 +66,7 @@ ADRs 001–006 record the original take-home decisions. Later ADRs add RAG, MCP,
 
 **Trade-offs.** Reviewer time is required. Operational risk is lower.
 
-**Consequences.** The audit log is the source of approval evidence.
+**Consequences.** Export remains gated on `approved`. Policy auto-approval, when it occurs, is an internal abstraction written through the same helper and audit event as human review.
 
 ## ADR 006: Versioned downstream integration contract
 
@@ -117,4 +123,14 @@ ADRs 001–006 record the original take-home decisions. Later ADRs add RAG, MCP,
 **Why.** Extraction output, evidence, validation, approval, audit, and export stay on the original tables and services.
 
 **Consequences.** A policy `AUTO_APPROVED` decision that still has blocking issues remains `awaiting_review`. Export is unchanged: only an approved lease can be exported.
+
+## ADR 012: Lease-type scoped specialist enablement
+
+**Context.** Commercial and residential leases need different specialist sets. Property-level flags could express “Dallas is always manual,” but they could not express “skip leasing and run insurance for every residential lease.” Letting a property turn specialists back on would also loosen organization policy.
+
+**Decision.** Persist `documents.lease_type` (`commercial` or `residential`, default `commercial`). Resolve flags as global → organization → lease type → property. Property rows may only tighten approval and never override `AGENT_TOGGLE_KEYS`. Reviewers manage specialist toggles on `/settings` through `POST /api/v1/flags/lease-types/{lease_type}`. Only catalog agent flags can be written there. Optional agents (insurance, recommendation) may be enabled per lease type even when the global default is off. Disabling a required agent skips that specialist and fail-closes auto-approval.
+
+**Why.** Operators can see and change which agents run for each lease category without a competing approval workflow. The backend remains authoritative.
+
+**Consequences.** The LangGraph supervisor reads the document’s lease type. Upload and demo-sample APIs accept `lease_type`. Residential defaults turn leasing off, insurance on, and auto-approval off. Unassigned original samples still skip the entire graph so the original review slice stays visible.
 

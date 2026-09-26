@@ -131,8 +131,10 @@ export function ReviewPage({ leaseId }: { leaseId: string }) {
         <div>
           <h1 className="text-2xl font-semibold text-navy-900">Lease review</h1>
           <p className="mt-1 text-sm text-slate-600">
-            Document {lease.original_filename ?? lease.document_id}. Extracted values are drafts until
-            approved. This is not legal advice.
+            Document {lease.original_filename ?? lease.document_id}. Lease type{" "}
+            {lease.lease_type ?? "commercial"} · property {lease.property_id}
+            {lease.approval_source ? ` · approval ${lease.approval_source}` : ""}. Extracted values
+            stay in review until approved. This is not legal advice.
           </p>
         </div>
         <div className="flex flex-col items-end gap-2">

@@ -8,11 +8,11 @@ Replace the labeled `demo-reviewer` actor with SSO, role-based review/approve/ex
 
 ## Multi-tenant isolation
 
-Add organization IDs to every table, enforce row-level access, and isolate storage prefixes. The current schema has no tenant boundary.
+Documents, leases, chunks, and workflow rows already store `organization_id`. RAG rejects a mismatched `X-Organization-ID`. What is not implemented is production auth, RBAC, or enforced row-level isolation.
 
 ## PostgreSQL migration
 
-Point `DATABASE_URL` at PostgreSQL, keep Alembic, and add connection pooling. SQLite remains the local assignment default.
+Docker Compose already runs PostgreSQL with pgvector. The remaining work is production pooling, backups, and ops. SQLite remains the local assignment default.
 
 ## Object storage
 
@@ -32,11 +32,11 @@ Publish the 1.0 export contract to a client API or queue. Mapping belongs in an 
 
 ## Document amendment processing
 
-Treat amendments as new documents linked to a lease version chain rather than overwriting history.
+The demo indexes a Property C amendment and can escalate on detected conflicts. A durable amendment version chain and full lease-history UI are not implemented.
 
 ## RAG-based portfolio questions
 
-After structured records exist, embed approved clause text for retrieval over a portfolio. A vector database belongs here, not in the first extraction path.
+Scoped RAG over parsed PDF chunks is implemented (`document_chunks`, `/knowledge`). What is not implemented is portfolio-wide search over approved records, a dedicated vector database, or paid embedding APIs.
 
 ## Human evaluation of LLM quality
 

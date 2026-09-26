@@ -67,7 +67,7 @@ export function UploadPage() {
   return (
     <div className="max-w-3xl space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-navy-900">Upload a commercial lease</h1>
+        <h1 className="text-2xl font-semibold text-navy-900">Upload a lease</h1>
         <p className="mt-2 text-sm text-slate-600">
           PDF files up to 10 MB. Extraction uses the configured provider. The default demo uses
           deterministic fixture extraction and does not call a live LLM.
