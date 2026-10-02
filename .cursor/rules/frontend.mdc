@@ -1,0 +1,12 @@
+---
+description: Frontend conventions for the Next.js review console
+globs: frontend/**
+alwaysApply: false
+---
+
+Follow `.cursor/skills/leaseflow-frontend/SKILL.md` for the architecture map, UI rules, test conventions, and verification commands.
+
+- All HTTP calls go through `lib/api.ts`; response types live in `lib/types.ts`.
+- The UI displays backend decisions about approval and policy; it never computes them.
+- Every UI change includes a Vitest test that mocks `fetch` at the network boundary.
+- Before finishing, run `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build` from `frontend/`.

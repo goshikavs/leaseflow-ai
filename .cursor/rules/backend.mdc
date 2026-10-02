@@ -1,0 +1,12 @@
+---
+description: Backend conventions for the FastAPI service
+globs: backend/**,samples/**
+alwaysApply: false
+---
+
+Follow `.cursor/skills/leaseflow-backend/SKILL.md` for the architecture map, invariants, change rules, and verification commands.
+
+- Raise `AppError` with a stable `code` for expected failures.
+- Use SQLAlchemy 2 style queries and Pydantic v2 models.
+- A change to an API response shape must update `frontend/lib/types.ts` and `docs/api.md` in the same change.
+- Before finishing, run `python -m ruff check .` and `python -m pytest` from `backend/`.

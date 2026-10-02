@@ -50,7 +50,7 @@ Browser (Next.js) -> FastAPI
                       |-> Deterministic policy engine + apply_approval + audit
 ```
 
-See [docs/architecture.md](docs/architecture.md), [docs/reviewer-verification.md](docs/reviewer-verification.md), [docs/multi-agent.md](docs/multi-agent.md), and [docs/architecture-decisions.md](docs/architecture-decisions.md).
+See [docs/architecture.md](docs/architecture.md), [docs/reviewer-verification.md](docs/reviewer-verification.md), [docs/multi-agent.md](docs/multi-agent.md), and [docs/architecture-decisions.md](docs/architecture-decisions.md). How Cursor was used to build it: [docs/ai-assisted-development.md](docs/ai-assisted-development.md) and the Cursor skills for the [backend](.cursor/skills/leaseflow-backend/SKILL.md) and [frontend](.cursor/skills/leaseflow-frontend/SKILL.md).
 
 ## Persistence, RAG, and MCP
 
