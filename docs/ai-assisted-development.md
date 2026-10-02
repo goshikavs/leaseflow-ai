@@ -10,7 +10,8 @@ LeaseFlow AI was built with Cursor as a pair programmer. Cursor generated and re
 | Codebase search and `@` file context | Pointing the agent at specific modules (`@backend/app/workflows/processing.py`, `@docs/architecture.md`) so changes followed existing patterns |
 | Inline edit | Small, local refactors, type fixes, and test additions |
 | Integrated terminal via the agent | Running `pytest`, `ruff`, `npm run lint`, `npm run typecheck`, `npm test`, and Playwright, then iterating on failures |
-| Project skill | `.cursor/skills/leaseflow-development/SKILL.md` records invariants, the architecture map, and verification commands so every session starts with the same constraints |
+| Backend skill | `.cursor/skills/leaseflow-backend/SKILL.md` records the trust-model invariants, backend architecture map, change rules, and pytest/ruff verification, and loads for work under `backend/` |
+| Frontend skill | `.cursor/skills/leaseflow-frontend/SKILL.md` records UI rules (API client only, backend decides approval, evidence beside every field, accessibility), test conventions, and lint/typecheck/Vitest/Playwright verification, and loads for work under `frontend/` |
 | Cloud Agents | Longer background tasks on a branch, opened as draft pull requests for review |
 | GitHub Actions | Final gate: backend lint and tests, frontend lint, typecheck, tests, and build, Compose validation, and end-to-end tests |
 
@@ -56,7 +57,8 @@ The prompts below are representative of the ones used for each phase. Each state
 
 ## Guardrails on generated code
 
-- **Invariants live in the repo.** The project skill lists the rules that generated changes must keep: three trust layers, evidence before data, one approval path, fail closed, tighten-only flags, content-hash fixtures, organization isolation, approved-only export.
+- **Skills are split by layer.** Backend and frontend work load different skills, so each session gets only the rules for the code it touches. The shared boundary is the API contract: a backend response change must update `frontend/lib/types.ts` in the same change.
+- **Invariants live in the repo.** The backend skill lists the rules that generated changes must keep: three trust layers, evidence before data, one approval path, fail closed, tighten-only flags, content-hash fixtures, organization isolation, approved-only export. The frontend skill adds that the UI never computes approval eligibility itself.
 - **Determinism by default.** `EXTRACTION_PROVIDER=fixture` keeps tests and CI free of network calls, secrets, and model variance.
 - **No secrets in prompts or code.** Keys come from `.env` (see `.env.example`), and the agent never needed real credentials.
 - **The LLM is limited to extraction.** Agents, policy, RAG answers, approval, and export are deterministic code, so AI-generated suggestions cannot approve a lease.
