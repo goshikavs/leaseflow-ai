@@ -1,18 +1,22 @@
 ---
-name: leaseflow-development
-description: Conventions, invariants, and verification steps for changing LeaseFlow AI (FastAPI backend, Next.js review console, RAG, MCP, LangGraph agents, policy-controlled approval). Use when adding features, fixing bugs, or reviewing changes anywhere in this repository.
+name: leaseflow-backend
+description: Conventions, invariants, and verification steps for the LeaseFlow AI FastAPI backend (extraction, evidence verification, validation, approval, feature flags, policy, LangGraph agents, MCP, RAG, Alembic). Use when changing or reviewing anything under backend/ or samples/.
 ---
 
-# LeaseFlow AI development
+# LeaseFlow AI backend
 
-LeaseFlow AI turns lease PDFs into reviewed, approved lease records. Every change must keep the trust model intact: raw model output is never the system of record.
+The backend turns lease PDFs into reviewed, approved lease records. Every change must keep the trust model intact: raw model output is never the system of record.
+
+Stack: Python 3.12, FastAPI, SQLAlchemy 2, Alembic, Pydantic v2, pydantic-settings, PyMuPDF, httpx, LangGraph, MCP SDK. SQLite locally, PostgreSQL in Docker Compose.
 
 ## Architecture map
 
 | Area | Location |
 |------|----------|
+| HTTP routes | `backend/app/api/` |
 | Upload and processing pipeline | `backend/app/workflows/processing.py` |
 | Extraction providers (fixture, OpenAI-compatible) | `backend/app/extraction/providers/` |
+| PDF validation and parsing | `backend/app/extraction/pdf.py` |
 | Evidence verification | `backend/app/extraction/evidence.py` |
 | Field mapping and validation | `backend/app/services/mapping.py`, `backend/app/services/validation.py` |
 | Approval (single write path) | `backend/app/services/approval.py` |
@@ -20,8 +24,9 @@ LeaseFlow AI turns lease PDFs into reviewed, approved lease records. Every chang
 | LangGraph workflow and specialists | `backend/app/agents/graph.py`, `backend/app/agents/specialists.py` |
 | MCP client and tool servers | `backend/app/mcp/` |
 | RAG chunking, embeddings, search | `backend/app/rag/` |
-| Schema migrations | `backend/alembic/versions/` |
-| Review console | `frontend/components/`, `frontend/lib/api.ts` |
+| Models and migrations | `backend/app/models/`, `backend/alembic/versions/` |
+| Settings | `backend/app/core/config.py` |
+| Tests | `backend/tests/` |
 
 ## Invariants
 
@@ -35,20 +40,22 @@ Do not break these. Add or update a test when touching the code that enforces th
 6. **Fixtures match by content.** The fixture provider selects answers by SHA-256 of the file bytes or an explicit `sample_key`. Never select by filename.
 7. **Organization isolation.** RAG search, MCP tool calls, and lease queries are scoped to the caller's organization.
 8. **Export is approved-only.** Export schema version `1.0` is produced only for approved leases.
+9. **Stable error contract.** Errors are raised as `AppError` with a stable `code`, so the frontend can rely on `{"error": {"code", "message"}}`.
 
 ## Making a change
 
-1. Read the relevant module and its tests in `backend/tests/` or `frontend/tests/` before editing.
+1. Read the relevant module and its tests in `backend/tests/` before editing.
 2. Schema changes need a new Alembic migration. Do not edit an existing migration.
 3. New extraction providers implement `ExtractionProvider` and return `LeaseExtractionResult`, so verification applies unchanged.
 4. New specialist agents are registered in `SPECIALIST_TOOLS` and `AGENT_REGISTRY`, call tools only through `McpClient`, and must appear in `TOOL_ALLOWLIST`.
 5. Policy changes go in `evaluate_policy` with a test per outcome: `AUTO_APPROVED`, `MANUAL_REVIEW_REQUIRED`, `ESCALATED`, `BLOCKED`.
-6. Keep docs in `docs/` consistent with behavior. If a scenario outcome changes, update `README.md`, `docs/multi-agent.md`, and `docs/reviewer-verification.md` together.
-7. Keep the default `EXTRACTION_PROVIDER=fixture` so tests and CI never need network access or secrets.
+6. Changing a response shape is an API contract change. Update `frontend/lib/types.ts` and `docs/api.md` in the same change, or coordinate through the frontend skill.
+7. If a scenario outcome changes, update `README.md`, `docs/multi-agent.md`, and `docs/reviewer-verification.md` together.
+8. Keep the default `EXTRACTION_PROVIDER=fixture` so tests and CI never need network access or secrets.
 
 ## Verification
 
-Run the same checks CI runs (`.github/workflows/ci.yml`):
+Run the same checks as the CI backend job (`.github/workflows/ci.yml`):
 
 ```bash
 cd backend
@@ -56,21 +63,6 @@ python -m pip install -r requirements-dev.txt
 python ../samples/generate_samples.py
 python -m ruff check .
 python -m pytest
-
-cd ../frontend
-npm ci
-npm run lint
-npm run typecheck
-npm test
-npm run build
-```
-
-End-to-end, when browsers are available:
-
-```bash
-cd frontend
-npx playwright install chromium
-npm run e2e
 ```
 
 `samples/generate_samples.py` rewrites the tracked sample PDFs and manifest. Restore them with `git checkout -- samples` unless the change is intentional.
