@@ -1,0 +1,45 @@
+---
+description: Guardrails for any AI-generated change in LeaseFlow AI
+alwaysApply: true
+---
+
+# Guardrails
+
+These apply to every change, in both backend and frontend.
+
+## Git and review
+
+- Work on a feature branch. Never commit directly to `main`.
+- Never push, force push, rewrite history, or merge without explicit approval from the developer.
+- One logical change per commit. Show the diff summary before committing.
+- Do not mark work done until the verification commands in the relevant skill pass, or the failure is reported.
+
+## Secrets and data
+
+- Never read, print, or edit `.env`, API keys, or tokens. Configuration examples go in `.env.example` with empty values.
+- Never hardcode credentials, connection strings with passwords, or real tenant data.
+- Sample leases are synthetic. Do not add real lease documents or personal data to the repository.
+- Do not log PDF text, extracted field values, or API keys.
+
+## Trust model (do not weaken)
+
+- Raw provider output never writes to the `leases` table; only values with `evidence_found` do.
+- Human and policy approval both go through `apply_approval`. Do not add a second approval path.
+- Policy and agent failures fail closed to manual review or a block.
+- Feature flags only tighten from defaults to property level.
+- Fixture selection uses content hash or `sample_key`, never filename.
+- Every query, RAG search, and MCP tool call is scoped to the organization.
+- The LLM is used only for extraction. It must not decide approval, policy, or export.
+
+## Scope control
+
+- Change only what the task requires. Do not reformat unrelated files or upgrade dependencies unless asked.
+- Do not edit existing Alembic migrations; add a new one.
+- Do not delete or weaken tests to make a change pass. If a test is wrong, explain why before changing it.
+- Changes to approval, policy, flags, evidence verification, or organization scoping need a test in the same commit.
+- Keep `EXTRACTION_PROVIDER=fixture` as the default so tests and CI run without network access or secrets.
+
+## Dependencies
+
+- Ask before adding a dependency. Prefer the standard library or an existing package.
+- Note the license of any new dependency. Copyleft licenses such as AGPL need explicit approval.
