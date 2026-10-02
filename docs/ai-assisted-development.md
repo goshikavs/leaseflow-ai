@@ -15,6 +15,20 @@ LeaseFlow AI was built with Cursor as a pair programmer. Cursor generated and re
 | Cloud Agents | Longer background tasks on a branch, opened as draft pull requests for review |
 | GitHub Actions | Final gate: backend lint and tests, frontend lint, typecheck, tests, and build, Compose validation, and end-to-end tests |
 
+## Cursor configuration files
+
+| File | Type | When it applies | Purpose |
+|------|------|-----------------|---------|
+| `AGENTS.md` | Agent instructions | Every session | Entry point that lists the rules and skills and the ground rules |
+| `.cursor/rules/guardrails.mdc` | Rule, `alwaysApply: true` | Every session | Git, secrets, trust-model, scope, and dependency guardrails |
+| `.cursor/rules/backend.mdc` | Rule, `globs: backend/**,samples/**` | When backend or sample files are in context | Backend conventions and a pointer to the backend skill |
+| `.cursor/rules/frontend.mdc` | Rule, `globs: frontend/**` | When frontend files are in context | Frontend conventions and a pointer to the frontend skill |
+| `.cursor/skills/leaseflow-backend/SKILL.md` | Skill | Backend tasks | Architecture map, invariants, change rules, verification |
+| `.cursor/skills/leaseflow-frontend/SKILL.md` | Skill | Frontend tasks | Architecture map, UI rules, test conventions, verification |
+| `.cursorignore` | Ignore file | Indexing and context | Keeps `.env`, local databases, uploaded PDFs, dependencies, and build output out of AI context |
+
+Rules are short and always or automatically attached; skills hold the longer, task-specific detail and are loaded when relevant. This keeps the context small and lets backend and frontend work follow different conventions.
+
 ## Workflow
 
 1. **Design first.** Write or update the relevant section of `docs/architecture.md` or an ADR in `docs/architecture-decisions.md`, then ask the agent to implement against it.
@@ -56,6 +70,16 @@ The prompts below are representative of the ones used for each phase. Each state
 > Compare the scenario outcomes documented in `README.md` and `docs/multi-agent.md` with what the tests assert. Report any mismatch.
 
 ## Guardrails on generated code
+
+The full list is in `.cursor/rules/guardrails.mdc`. In summary:
+
+| Category | Guardrail |
+|----------|-----------|
+| Git and review | Feature branches only; no push, force push, or merge without developer approval; one logical change per commit; verification must pass before work is reported done |
+| Secrets and data | Never read or print `.env` or keys; `.cursorignore` excludes secrets, databases, and uploads from context; synthetic sample leases only; no PDF text or field values in logs |
+| Trust model | Only `evidence_found` values reach `leases`; one approval path through `apply_approval`; fail closed; tighten-only flags; content-hash fixtures; organization scoping; LLM limited to extraction |
+| Scope control | Change only what the task needs; never edit existing migrations; never delete or weaken tests to pass; approval, policy, flag, evidence, and scoping changes need a test in the same commit |
+| Dependencies | Ask before adding one; check its license, and get approval for copyleft licenses such as AGPL |
 
 - **Skills are split by layer.** Backend and frontend work load different skills, so each session gets only the rules for the code it touches. The shared boundary is the API contract: a backend response change must update `frontend/lib/types.ts` in the same change.
 - **Invariants live in the repo.** The backend skill lists the rules that generated changes must keep: three trust layers, evidence before data, one approval path, fail closed, tighten-only flags, content-hash fixtures, organization isolation, approved-only export. The frontend skill adds that the UI never computes approval eligibility itself.
